@@ -3,9 +3,11 @@
  * ページ本体（HTML）はネットワーク優先。全部キャッシュ優先にしていたせいで、
  * 直したものが端末に届かず、古い <link rel="apple-touch-icon"> を掴み続ける事故が起きた。
  * 画像などファイル名が変わらないものだけキャッシュ優先にする。 */
-var CACHE = 'suki-no-tane-v4';
+var CACHE = 'suki-no-tane-v5';
 var SHELL = ['./', './index.html', './manifest.json',
-             './icon-180-v2.png', './icon-192-v2.png', './icon-512-v2.png'];
+             './icon-180-v2.png', './icon-192-v2.png', './icon-512-v2.png',
+             // 端末に残った古いHTMLが指す旧名。同じ絵を置いてあるので拾えるようにする
+             './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(

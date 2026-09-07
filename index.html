@@ -11,8 +11,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="好きの種">
 <link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" href="./icon-180-v2.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icon-180-v2.png">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="./icon-180-v2.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192-v2.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512-v2.png">
 <style>html,body{background:#08080A}</style>
 </head>
 <body>
@@ -740,7 +742,11 @@ if(!SR)say('この端末では音声が使えない。押すと手で書ける�
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
-    navigator.serviceWorker.register('./sw.js').catch(function(){});
+    // updateViaCache:'none' を付けないと sw.js 自体が HTTP キャッシュから返り、
+    // 直したはずのものが端末に届かない状態が続く
+    navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'})
+      .then(function(reg){ reg.update(); })
+      .catch(function(){});
   });
 }
 </script>

@@ -300,7 +300,8 @@ function syncPane(){
   if(pane===2)layout();
 }
 track.addEventListener('scroll',syncPane,{passive:true});
-window.addEventListener('resize',function(){measure();layout();});
+// 画面幅が変わるとスクロール位置(px)の意味がずれる。いまの面に合わせ直す。
+window.addEventListener('resize',function(){measure();layout();goPane(pane,false);});
 
 /* ───────── 投げる：音声 ───────── */
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;

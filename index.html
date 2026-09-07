@@ -53,36 +53,56 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .dots i{width:4px;height:4px;border-radius:50%;background:var(--l16);transition:background .3s,width .3s var(--ease)}
 .dots i.on{background:var(--l58);width:14px;border-radius:2px}
 
-/* ── 投げる ── */
+/* ── 投げる ──
+   丸ひとつが最初から最後まで唯一の操作。上に覆いをかぶせて押せなくしない。
+   idle = 白い円 ／ live = 白い輪＋波紋 ／ confirm = 小さくなって「言い直す」 */
 #throw{display:grid;place-items:center;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-.orbwrap{position:relative;display:grid;place-items:center;width:min(62vw,250px);aspect-ratio:1}
+.stage{display:flex;flex-direction:column;align-items:center;width:100%;padding:0 26px}
+
+.said{width:100%;max-width:19em;text-align:center;text-wrap:balance;
+  font-weight:300;font-size:clamp(20px,5.6vw,27px);line-height:1.55;letter-spacing:-.005em;
+  max-height:0;opacity:0;margin-bottom:0;overflow:hidden;
+  transition:max-height .34s var(--ease),opacity .24s,margin-bottom .34s var(--ease),color .3s}
+.said:focus{outline:none}
+.said:empty::before{content:"ここに書く";color:var(--l26)}
+#throw[data-state="live"] .said,
+#throw[data-state="confirm"] .said{max-height:42vh;opacity:1;margin-bottom:36px;overflow-y:auto}
+#throw[data-state="live"] .said{color:var(--l58)}
+#throw[data-state="confirm"] .said{border-bottom:1px solid var(--l09);padding-bottom:12px}
+
+.orbwrap{position:relative;display:grid;place-items:center;flex:0 0 auto;
+  width:min(62vw,250px);aspect-ratio:1;transition:width .38s var(--ease)}
+#throw[data-state="confirm"] .orbwrap{width:min(28vw,108px)}
 .orb{position:relative;z-index:2;width:100%;height:100%;border-radius:50%;border:0;
-  background:var(--lume);animation:breathe 5.4s ease-in-out infinite;
-  transition:transform .22s var(--ease),background .3s}
-.orb:active{transform:scale(.955)}
-.orb.live{animation:none;background:var(--l40);transform:scale(.9)}
+  background:var(--lume);touch-action:manipulation;
+  animation:breathe 5.4s ease-in-out infinite;
+  transition:transform .18s var(--ease),background .3s}
+/* 聞いている間は中央が抜けて輪になる。暗くしない（暗い＝止まって見える） */
+.orb::after{content:"";position:absolute;inset:50%;border-radius:50%;background:var(--void);
+  transition:inset .32s var(--ease)}
+.orb.press{transform:scale(.94)}
+.orb.wait{background:var(--l26)}
+#throw[data-state="live"] .orb{animation:none}
+#throw[data-state="live"] .orb::after{inset:10px}
+#throw[data-state="confirm"] .orb{animation:none;background:var(--lume)}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.028)}}
 .ring{position:absolute;inset:0;border-radius:50%;border:1px solid var(--l40);pointer-events:none;z-index:1;animation:spread 2.4s ease-out forwards}
 @keyframes spread{from{transform:scale(1);opacity:.55}to{transform:scale(2.15);opacity:0}}
 
-/* ── 聞き取り結果の確認 ── */
-.sheet{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:center;gap:26px;
-  padding:0 26px calc(52px + env(safe-area-inset-bottom));background:rgba(8,8,10,.9);
-  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
-  opacity:0;pointer-events:none;transition:opacity .26s}
-.sheet.on{opacity:1;pointer-events:auto}
-.heard{font-family:var(--f);font-weight:300;font-size:clamp(23px,6.6vw,30px);line-height:1.6;letter-spacing:-.005em;
-  text-align:center;text-wrap:balance;max-width:22em;margin:0 auto;
-  border-bottom:1px solid var(--l09);padding:0 2px 14px;min-height:1.6em;transform:translateY(8px);transition:transform .3s var(--ease)}
-.sheet.on .heard{transform:translateY(0)}
-.heard:empty::before{content:"聞き取れなかった。もう一度。";color:var(--l40)}
-.heard[contenteditable]:focus{outline:none;border-bottom-color:var(--l40)}
-.acts{display:flex;flex-direction:column;align-items:center;gap:16px}
+.acts{display:flex;align-items:center;gap:26px;max-height:0;opacity:0;margin-top:0;overflow:hidden;
+  transition:max-height .3s var(--ease),opacity .24s,margin-top .3s var(--ease)}
+#throw[data-state="confirm"] .acts{max-height:80px;opacity:1;margin-top:36px}
 .place{min-height:52px;padding:0 40px;border-radius:26px;border:1px solid var(--l26);background:var(--l05);
   font-size:14px;font-weight:500;letter-spacing:.1em;transition:background .2s,border-color .2s}
 .place:active{background:var(--l09);border-color:var(--l40)}
-.subacts{display:flex;gap:22px;color:var(--l40);font-size:13px;letter-spacing:.06em}
-.subacts button:active{color:var(--l86)}
+.drop{color:var(--l40);font-size:13px;letter-spacing:.06em}
+.drop:active{color:var(--l86)}
+/* 止め方は、聞いている間だけ出す */
+.tip{position:absolute;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));
+  text-align:center;font-size:11.5px;letter-spacing:.14em;color:var(--l26);
+  opacity:0;pointer-events:none;transition:opacity .3s}
+#throw[data-state="live"] .tip,
+#throw[data-state="confirm"] .tip{opacity:1}
 
 /* ── 種が箱へ飛ぶ ── */
 .fly{position:fixed;z-index:60;pointer-events:none;font-family:var(--f);font-size:16px;color:var(--l86);
@@ -172,20 +192,18 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 <main class="track" id="track">
   <section class="pane" id="dash" aria-label="記録"></section>
 
-  <section class="pane" id="throw" aria-label="投げる">
-    <div class="orbwrap" id="orbwrap">
-      <button class="orb" id="orb" aria-label="押して、声に出す"></button>
-    </div>
-    <div class="sheet" id="sheet" aria-live="polite">
-      <div class="heard" id="heard" contenteditable="true" role="textbox" aria-label="聞き取った内容"></div>
+  <section class="pane" id="throw" aria-label="投げる" data-state="idle">
+    <div class="stage">
+      <div class="said" id="heard" contenteditable="true" role="textbox" aria-label="聞き取った内容"></div>
+      <div class="orbwrap" id="orbwrap">
+        <button class="orb" id="orb" aria-label="押して、声に出す"></button>
+      </div>
       <div class="acts">
         <button class="place" id="place">置く</button>
-        <div class="subacts">
-          <button id="redo">言い直す</button>
-          <button id="drop">やめる</button>
-        </div>
+        <button class="drop" id="drop">やめる</button>
       </div>
     </div>
+    <div class="tip" id="tip"></div>
   </section>
 
   <section class="pane" id="box" aria-label="箱">
@@ -304,74 +322,92 @@ track.addEventListener('scroll',syncPane,{passive:true});
 // 画面幅が変わるとスクロール位置(px)の意味がずれる。いまの面に合わせ直す。
 window.addEventListener('resize',function(){measure();layout();goPane(pane,false);});
 
-/* ───────── 投げる：音声 ───────── */
+/* ───────── 投げる：丸ひとつで完結させる ─────────
+   idle → 押す → live（聞いている）→ もう一度押す or 黙る → confirm（直して置く）
+   丸は常に最前面にあり、どの状態でも押せる。 */
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-var orb=$('orb'),orbwrap=$('orbwrap'),sheet=$('sheet'),heard=$('heard');
-var rec=null,listening=false,ringT=null,finalText='',useVoice=!!SR;
+var throwPane=$('throw'),orb=$('orb'),orbwrap=$('orbwrap'),heard=$('heard');
+var rec=null,ringT=null,useVoice=!!SR;
+
+function phase(){return throwPane.getAttribute('data-state')}
+function setState(s){
+  throwPane.setAttribute('data-state',s);
+  track.classList.toggle('lock',s!=='idle');   // 録りかけで横に流れていかないように
+  var label=s==='live'?'押して、止める'
+    :s==='confirm'?(useVoice?'押して、言い直す':'押して、書きなおす')
+    :'押して、声に出す';
+  orb.setAttribute('aria-label',label);
+  $('tip').textContent=s==='live'?'もう一度おして、止める'
+    :s==='confirm'?(useVoice?'おして、言い直す':'おして、書きなおす'):'';
+  if(s==='idle')heard.textContent='';
+}
 
 function ring(){
   if(reduced)return;
   var r=document.createElement('div');r.className='ring';orbwrap.appendChild(r);
   setTimeout(function(){r.remove()},2500);
 }
-function startRings(){ring();ringT=setInterval(ring,760)}
+function startRings(){stopRings();ring();ringT=setInterval(ring,760)}
 function stopRings(){clearInterval(ringT);ringT=null}
 
-function openSheet(text){
-  finalText=text||'';
-  heard.textContent=finalText;
-  sheet.classList.add('on');
-  if(!useVoice)setTimeout(function(){try{heard.focus()}catch(e){}},260);
-}
-function closeSheet(){sheet.classList.remove('on');heard.textContent='';finalText=''}
-
 function stopListen(){
-  listening=false;orb.classList.remove('live');stopRings();
+  stopRings();orb.classList.remove('wait');
   if(rec){try{rec.stop()}catch(e){}}
 }
 
-function startListen(){
-  if(!useVoice){openSheet('');return}
-  try{rec=new SR()}catch(e){useVoice=false;openSheet('');return}
-  rec.lang='ja-JP';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
-  var got='';
-  rec.onresult=function(ev){
-    var interim='';got='';
-    for(var i=0;i<ev.results.length;i++){
-      var t=ev.results[i][0].transcript;
-      if(ev.results[i].isFinal)got+=t;else interim+=t;
-    }
-    ring();
-    heard.textContent=got+interim;
-    if(!sheet.classList.contains('on'))sheet.classList.add('on');
-  };
-  rec.onerror=function(ev){
-    stopListen();
-    var e=ev.error;
-    if(e==='not-allowed'||e==='service-not-allowed'){useVoice=false;say('マイクを使えなかった。手で書ける。');openSheet('')}
-    else if(e==='no-speech'){closeSheet();say('声が届かなかった。もう一度。')}
-    else if(e==='aborted'){/* 手動停止 */}
-    else{useVoice=false;say('音声を認識できなかった。手で書ける。');openSheet('')}
-  };
-  rec.onend=function(){
-    stopListen();
-    var t=(heard.textContent||'').trim();
-    if(t)openSheet(t);
-    else if(sheet.classList.contains('on'))openSheet('');
-  };
-  try{
-    rec.start();listening=true;orb.classList.add('live');startRings();
-    if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
-  }catch(e){useVoice=false;openSheet('')}
+/* 声が使えないときは、同じ丸から手書きに落ちる。機能は止めない。 */
+function toTyping(msg){
+  useVoice=false;stopListen();setState('confirm');
+  if(msg)say(msg);
+  setTimeout(function(){try{heard.focus()}catch(e){}},300);
 }
 
+function startListen(){
+  heard.textContent='';
+  if(!useVoice){toTyping();return}
+  try{rec=new SR()}catch(e){toTyping('音声を使えなかった。手で書ける。');return}
+  rec.lang='ja-JP';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+
+  // 許可待ちの間は live にしない。押した直後に「聞いている」と嘘をつかないため
+  rec.onstart=function(){orb.classList.remove('wait');setState('live');startRings()};
+  rec.onresult=function(ev){
+    var t='';
+    for(var i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript;
+    heard.textContent=t;ring();
+  };
+  rec.onerror=function(ev){
+    stopRings();orb.classList.remove('wait');
+    var e=ev.error;
+    if(e==='not-allowed'||e==='service-not-allowed')toTyping('マイクを使えなかった。手で書ける。');
+    else if(e==='no-speech'){setState('idle');say('聞こえなかった。もう一度。')}
+    else if(e==='aborted'){/* こちらから止めた */}
+    else toTyping('音声を認識できなかった。手で書ける。');
+  };
+  rec.onend=function(){
+    stopRings();orb.classList.remove('wait');
+    var t=(heard.textContent||'').trim();
+    if(t)setState('confirm');
+    else if(phase()!=='confirm'){setState('idle');say('聞こえなかった。もう一度。')}
+  };
+  try{
+    orb.classList.add('wait');rec.start();
+    if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
+  }catch(e){orb.classList.remove('wait');toTyping('音声を始められなかった。手で書ける。')}
+}
+
+/* iOS の :active は指を置いた瞬間に効かないことがあるので、自前で押し込む */
+orb.addEventListener('pointerdown',function(){orb.classList.add('press')});
+['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+  orb.addEventListener(ev,function(){orb.classList.remove('press')});
+});
 orb.addEventListener('click',function(){
-  if(sheet.classList.contains('on')&&!listening)return;
-  if(listening)stopListen();else startListen();
+  var s=phase();
+  if(s==='live'){stopListen();return}
+  if(s==='confirm'&&!useVoice){try{heard.focus()}catch(e){}return}  // 書いた字を消さない
+  startListen();
 });
 
-$('redo').addEventListener('click',function(){heard.textContent='';startListen()});
-$('drop').addEventListener('click',function(){stopListen();closeSheet()});
+$('drop').addEventListener('click',function(){stopListen();setState('idle')});
 $('place').addEventListener('click',function(){
   var t=(heard.textContent||'').replace(/\s+/g,' ').trim();
   if(!t){say('ひとことだけでも置いてみよう');return}
@@ -379,7 +415,7 @@ $('place').addEventListener('click',function(){
   var c={id:uid(),text:t,kind:'unknown',status:'inbox',pull:1,createdAt:nowIso(),updatedAt:nowIso()};
   state.captures.push(c);save();
   flyToBox(t);
-  closeSheet();
+  setState('idle');
   if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
   say('置いた','取り消す',function(){
     var i=state.captures.map(function(x){return x.id}).indexOf(c.id);
@@ -417,10 +453,15 @@ function keyword(t){
   var runs=[],m;
   while((m=re.exec(s))!==null)runs.push({t:m[0],i:m.index,e:m.index+m[0].length,tail:null});
   if(!runs.length)return s.slice(0,6)||String(t).trim();
+  // ひらがな1字を挟んで隣り合う語はつなぐ（編み物・買い物・夜の海）。
+  // ただしその1字が助詞なら、そこは語の切れ目なのでつながない（陶芸を／海に）。
+  var PART='はがをにへとでもやかねよさなぞわ';
   var merged=[runs[0]];
   for(var i=1;i<runs.length;i++){
-    var p=merged[merged.length-1],c=runs[i];
-    if(c.i===p.e+1&&s.charAt(p.e)==='の')merged[merged.length-1]={t:p.t+'の'+c.t,i:p.i,e:c.e,tail:c.t};
+    var p=merged[merged.length-1],c=runs[i],sep=s.slice(p.e,c.i);
+    var joinable=sep.length===1&&(sep==='の'||PART.indexOf(sep)<0);
+    if(joinable&&(p.t+sep+c.t).length<=7)
+      merged[merged.length-1]={t:p.t+sep+c.t,i:p.i,e:c.e,tail:c.t};
     else merged.push(c);
   }
   var best=merged[0];

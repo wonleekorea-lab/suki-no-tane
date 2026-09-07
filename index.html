@@ -51,63 +51,60 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .pane{position:relative;flex:0 0 100%;height:100dvh;scroll-snap-align:center;scroll-snap-stop:always;overflow:hidden}
 
 /* ── 面の位置を示す3点（文字を置かないための唯一の道標） ── */
-.dots{position:fixed;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));display:flex;gap:7px;justify-content:center;z-index:40;pointer-events:none}
+.dots{position:fixed;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));display:flex;gap:7px;justify-content:center;z-index:40;pointer-events:none;transition:opacity .3s}
 .dots i{width:4px;height:4px;border-radius:50%;background:var(--l16);transition:background .3s,width .3s var(--ease)}
 .dots i.on{background:var(--l58);width:14px;border-radius:2px}
 
 /* ── 投げる ──
-   丸ひとつが最初から最後まで唯一の操作。上に覆いをかぶせて押せなくしない。
-   idle = 白い円 ／ live = 白い輪＋波紋 ／ confirm = 小さくなって「言い直す」 */
-#throw{display:grid;place-items:center;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+   丸を押すと、そのまま書ける状態になる。声はキーボードのマイク（Appleの文字起こし）で入れる。
+   Web Speech API は使わない：起動のたびに許可を訊かれ、開始音も鳴り、どちらもAPIから止められない。 */
+#throw{display:grid;place-items:center;
+  padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + var(--kb,0px));
+  transition:padding-bottom .22s var(--ease)}
 .stage{display:flex;flex-direction:column;align-items:center;width:100%;padding:0 26px}
 
 .said{width:100%;max-width:19em;text-align:center;text-wrap:balance;
   font-weight:300;font-size:clamp(20px,5.6vw,27px);line-height:1.55;letter-spacing:-.005em;
   max-height:0;opacity:0;margin-bottom:0;overflow:hidden;
-  transition:max-height .34s var(--ease),opacity .24s,margin-bottom .34s var(--ease),color .3s}
+  transition:max-height .34s var(--ease),opacity .24s,margin-bottom .34s var(--ease)}
 .said:focus{outline:none}
-.said:empty::before{content:"ここに書く";color:var(--l26)}
-#throw[data-state="live"] .said,
-#throw[data-state="confirm"] .said{max-height:42vh;opacity:1;margin-bottom:36px;overflow-y:auto}
-#throw[data-state="live"] .said{color:var(--l58)}
-#throw[data-state="confirm"] .said{border-bottom:1px solid var(--l09);padding-bottom:12px}
+.said:empty::before{content:"speak";color:var(--l16);letter-spacing:.34em}
+#throw[data-state="confirm"] .said{max-height:42vh;opacity:1;margin-bottom:32px;overflow-y:auto;
+  border-bottom:1px solid var(--l09);padding-bottom:12px}
+body.kb #throw[data-state="confirm"] .said{max-height:32vh;margin-bottom:24px}
 
 .orbwrap{position:relative;display:grid;place-items:center;flex:0 0 auto;
-  width:min(62vw,250px);aspect-ratio:1;transition:width .38s var(--ease)}
+  width:min(62vw,250px);aspect-ratio:1;
+  transition:width .38s var(--ease),opacity .28s}
 #throw[data-state="confirm"] .orbwrap{width:min(28vw,108px)}
+/* キーボードが出ているあいだは丸を畳んで、場所を譲る */
+body.kb #throw .orbwrap{width:0;opacity:0}
 .orb{position:relative;z-index:2;width:100%;height:100%;border-radius:50%;border:0;
   background:var(--lume);touch-action:manipulation;
   animation:breathe 5.4s ease-in-out infinite;
   transition:transform .18s var(--ease),background .3s}
-/* 聞いている間は中央が抜けて輪になる。暗くしない（暗い＝止まって見える） */
-.orb::after{content:"";position:absolute;inset:50%;border-radius:50%;background:var(--void);
-  transition:inset .32s var(--ease)}
 .orb.press{transform:scale(.94)}
-.orb.wait{background:var(--l26)}
-#throw[data-state="live"] .orb{animation:none}
-#throw[data-state="live"] .orb::after{inset:10px}
-#throw[data-state="confirm"] .orb{animation:none;background:var(--lume)}
+#throw[data-state="confirm"] .orb{animation:none}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.028)}}
-.ring{position:absolute;inset:0;border-radius:50%;border:1px solid var(--l40);pointer-events:none;z-index:1;animation:spread 2.4s ease-out forwards}
-@keyframes spread{from{transform:scale(1);opacity:.55}to{transform:scale(2.15);opacity:0}}
 
 .acts{display:flex;align-items:center;gap:26px;max-height:0;opacity:0;margin-top:0;overflow:hidden;
   transition:max-height .3s var(--ease),opacity .24s,margin-top .3s var(--ease)}
-#throw[data-state="confirm"] .acts{max-height:80px;opacity:1;margin-top:36px}
+#throw[data-state="confirm"] .acts{max-height:80px;opacity:1;margin-top:32px}
+body.kb #throw[data-state="confirm"] .acts{margin-top:22px}
 .place{min-height:52px;padding:0 42px;border-radius:26px;border:1px solid var(--l26);background:var(--l05);
   font-size:13px;font-weight:500;letter-spacing:.3em;text-indent:.3em;transition:background .2s,border-color .2s}
 .place:active{background:var(--l09);border-color:var(--l40)}
 .drop{color:var(--l40);font-size:12px;letter-spacing:.24em;text-indent:.24em}
 .drop:active{color:var(--l86)}
-/* 止め方は、聞いている間だけ出す */
 .tip{position:absolute;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));
   text-align:center;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;color:var(--l26);
   opacity:0;pointer-events:none;transition:opacity .3s}
+#throw[data-state="confirm"] .tip{opacity:1}
 /* 英字ラベルの共通の置き方 */
 .tip,.hint,.ghost span,.empty,.place,.route button,.drop,.cfoot,.h,.today span,
-.stats span,.dfoot,.sed .s em,.recent .r em,.toast,.toast button{text-transform:lowercase}
-#throw[data-state="live"] .tip,
-#throw[data-state="confirm"] .tip{opacity:1}
+.stats span,.dfoot,.sed .s em,.recent .r em,.toast,.toast button,.said:empty::before{text-transform:lowercase}
+/* キーボードに隠れるものは、出ているあいだ引っ込める */
+body.kb #throw .tip,body.kb .dots{opacity:0}
 
 /* ── 種が箱へ飛ぶ ── */
 .fly{position:fixed;z-index:60;pointer-events:none;font-family:var(--f);font-size:16px;color:var(--l86);
@@ -328,107 +325,79 @@ track.addEventListener('scroll',syncPane,{passive:true});
 // 画面幅が変わるとスクロール位置(px)の意味がずれる。いまの面に合わせ直す。
 window.addEventListener('resize',function(){measure();layout();goPane(pane,false);});
 
-/* ───────── 投げる：丸ひとつで完結させる ─────────
-   idle → 押す → live（聞いている）→ もう一度押す or 黙る → confirm（直して置く）
-   丸は常に最前面にあり、どの状態でも押せる。 */
-var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+/* ───────── 投げる ─────────
+   丸を押す → そのまま書ける。声はキーボードのマイク（Appleの文字起こし）から入る。
+   Web Speech API をやめた理由：起動のたびにマイクの許可を訊かれ、開始音も鳴る。
+   どちらも iOS 側が出すもので、APIからは止められないため。 */
 var throwPane=$('throw'),orb=$('orb'),orbwrap=$('orbwrap'),heard=$('heard');
-var rec=null,ringT=null,useVoice=!!SR;
 
 function phase(){return throwPane.getAttribute('data-state')}
 function setState(s){
   throwPane.setAttribute('data-state',s);
-  // 固定するのは録っている間だけ。確認中は横に動ける（文は消さずに残す）
-  track.classList.toggle('lock',s==='live');
-  var label=s==='live'?'押して、止める'
-    :s==='confirm'?(useVoice?'押して、言い直す':'押して、書きなおす')
-    :'押して、声に出す';
-  orb.setAttribute('aria-label',label);
-  $('tip').textContent=s==='live'?'listening':s==='confirm'?'again':'';
-  if(s==='idle')heard.textContent='';
+  orb.setAttribute('aria-label',s==='confirm'?'押して、続きを書く':'押して、声に出す');
+  $('tip').textContent=s==='confirm'?'speak':'';
+  if(s==='idle'){heard.textContent='';try{heard.blur()}catch(e){}}
 }
 
-function ring(){
-  if(reduced)return;
-  var r=document.createElement('div');r.className='ring';orbwrap.appendChild(r);
-  setTimeout(function(){r.remove()},2500);
-}
-function startRings(){stopRings();ring();ringT=setInterval(ring,760)}
-function stopRings(){clearInterval(ringT);ringT=null}
-
-function stopListen(){
-  stopRings();orb.classList.remove('wait');
-  if(rec){try{rec.stop()}catch(e){}}
-}
-
-/* 声が使えないときは、同じ丸から手書きに落ちる。機能は止めない。 */
-function toTyping(msg){
-  useVoice=false;stopListen();setState('confirm');
-  if(msg)say(msg);
-  setTimeout(function(){try{heard.focus()}catch(e){}},300);
-}
-
-function startListen(){
-  heard.textContent='';
-  if(!useVoice){toTyping();return}
-  try{rec=new SR()}catch(e){toTyping('音声を使えなかった。手で書ける。');return}
-  rec.lang='ja-JP';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
-
-  // 許可待ちの間は live にしない。押した直後に「聞いている」と嘘をつかないため
-  rec.onstart=function(){orb.classList.remove('wait');setState('live');startRings()};
-  rec.onresult=function(ev){
-    var t='';
-    for(var i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript;
-    heard.textContent=t;ring();
-  };
-  rec.onerror=function(ev){
-    stopRings();orb.classList.remove('wait');
-    var e=ev.error;
-    if(e==='not-allowed'||e==='service-not-allowed')toTyping('マイクを使えなかった。手で書ける。');
-    else if(e==='no-speech'){setState('idle');say('聞こえなかった。もう一度。')}
-    else if(e==='aborted'){/* こちらから止めた */}
-    else toTyping('音声を認識できなかった。手で書ける。');
-  };
-  rec.onend=function(){
-    stopRings();orb.classList.remove('wait');
-    var t=(heard.textContent||'').trim();
-    if(t)setState('confirm');
-    else if(phase()!=='confirm'){setState('idle');say('聞こえなかった。もう一度。')}
-  };
+/* iOS は、押したのと同じ処理の中で focus しないとキーボードが出ない。
+   setTimeout を挟むと開かないので、ここは必ず同期で書く。 */
+function openInput(){
+  if(phase()!=='confirm')setState('confirm');
   try{
-    orb.classList.add('wait');rec.start();
-    if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
-  }catch(e){orb.classList.remove('wait');toTyping('音声を始められなかった。手で書ける。')}
+    heard.focus();
+    var r=document.createRange();r.selectNodeContents(heard);r.collapse(false);
+    var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+  }catch(e){}
+  if(!state.captures.length&&!hinted){hinted=true;say('キーボードの🎤を押すと、声で入る')}
 }
+var hinted=false;
 
-/* iOS の :active は指を置いた瞬間に効かないことがあるので、自前で押し込む */
 orb.addEventListener('pointerdown',function(){orb.classList.add('press')});
 ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
   orb.addEventListener(ev,function(){orb.classList.remove('press')});
 });
-orb.addEventListener('click',function(){
-  var s=phase();
-  if(s==='live'){stopListen();return}
-  if(s==='confirm'&&!useVoice){try{heard.focus()}catch(e){}return}  // 書いた字を消さない
-  startListen();
-});
+orb.addEventListener('click',openInput);
 
-$('drop').addEventListener('click',function(){stopListen();setState('idle')});
+$('drop').addEventListener('click',function(){setState('idle')});
 $('place').addEventListener('click',function(){
   var t=(heard.textContent||'').replace(/\s+/g,' ').trim();
-  if(!t){say('ひとことだけでも置いてみよう');return}
-  stopListen();
+  if(!t){say('ひとことだけでも');return}
   var c={id:uid(),text:t,kind:'unknown',status:'inbox',pull:1,createdAt:nowIso(),updatedAt:nowIso()};
   state.captures.push(c);save();
   flyToBox(t);
   setState('idle');
-  if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
   say('kept','undo',function(){
     var i=state.captures.map(function(x){return x.id}).indexOf(c.id);
     if(i>=0){state.captures.splice(i,1);save();build();drawDash()}
   });
   build();
 });
+
+/* キーボードのぶんだけ下を空ける。dvh はキーボードに反応しないので visualViewport を見る */
+function syncKb(){
+  var vv=window.visualViewport;if(!vv)return;
+  var kb=Math.max(0,Math.round(window.innerHeight-vv.height-vv.offsetTop));
+  document.documentElement.style.setProperty('--kb',kb+'px');
+  document.body.classList.toggle('kb',kb>80);
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',syncKb);
+  window.visualViewport.addEventListener('scroll',syncKb);
+}
+heard.addEventListener('blur',function(){setTimeout(syncKb,80)});
+
+/* 開き直したときは、いつでも投げられる形から始める。
+   全画面アプリは閉じても再読み込みされず、前の画面のまま戻ってくるため。 */
+var hiddenAt=0;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){hiddenAt=Date.now();return}
+  if(hiddenAt&&Date.now()-hiddenAt>20000){
+    if(phase()==='confirm'&&!(heard.textContent||'').trim())setState('idle');
+    goPane(1,false);
+  }
+  hiddenAt=0;
+});
+window.addEventListener('pageshow',function(e){if(e.persisted)goPane(1,false)});
 
 /* 置いた言葉が箱の方角へ飛ぶ */
 function flyToBox(text){
@@ -736,7 +705,6 @@ goPane(1,false);
 setTimeout(function(){goPane(1,false);measure();build();drawDash()},60);
 window.addEventListener('load',function(){goPane(1,false);measure();build()});
 build();drawDash();
-if(!SR)say('この端末では音声が使えない。押すと手で書ける。');
 })();
 </script>
 <script>

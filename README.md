@@ -54,8 +54,8 @@ python3 -m http.server 8910 --directory "suki-no-tane"
 | `artifact.html` | 生成物。`<html>` の外殻を持たない body 相当（Artifact 公開用） |
 | `manifest.json` | ホーム画面追加時の名前・色・アイコン |
 | `sw.js` | アプリシェルのオフラインキャッシュ |
-| `icon-180.png` / `icon-192.png` / `icon-512.png` | アイコン。`tools/make-icons.py` の生成物 |
-| `tools/make-icons.py` | アイコン生成。図案は「声に出した瞬間」＝押す丸と広がる波紋。半径・線幅・濃さの比を変えて再生成する |
+| `icon-*-v2.png` | アイコン。`tools/make-icons.py` の生成物 |
+| `tools/make-icons.py` | アイコン生成。図案は「声に出した瞬間」＝押す丸と広がる波紋 |
 | `_demo.html` | 見た目確認用の使い捨て。偽データを差し込んだだけで、実データには触れない。消してよい |
 
 編集したら必ず：
@@ -94,6 +94,19 @@ sh "suki-no-tane/build.sh"
 - カレンダー連携、通知、クラウド同期、アカウント
 - 種の自動分類、要約、AI による解釈
 - 泡の並べ替え・検索・タグ
+
+## アイコンを描き替えるとき
+
+**必ずファイル名の `v` を上げること。** iOS Safari はホーム画面のアイコンを URL ごとに
+長期キャッシュするので、同じファイル名のまま絵だけ変えても端末には古い絵が残り続ける。
+
+1. `tools/make-icons.py` の `VERSION` を上げて実行
+2. `shell-head.html`・`manifest.json`・`sw.js` の参照を新しい名前に揃える
+3. `sw.js` の `CACHE` 名も上げる
+4. `sh build.sh` → commit → push
+
+端末側は、ホーム画面から一度削除してから追加し直す（iOS は追加時の画像を焼き付けるため、
+追加済みのアイコンは後から入れ替わらない）。
 
 ## 既知の制約
 

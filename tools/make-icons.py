@@ -15,6 +15,11 @@ import zlib
 
 # 呼び出したディレクトリに関係なく、リポジトリ直下へ書き出す
 OUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# iOS Safari はホーム画面のアイコンを「URLごと」に長期キャッシュする。
+# 絵を変えたらこの数字を上げ、参照側（shell-head.html / manifest.json / sw.js）も
+# 揃えて書き換えること。同じファイル名のままでは端末に古い絵が残り続ける。
+VERSION = 2
 BG = (8, 8, 10)        # --void
 FG = (250, 250, 247)   # --lume
 SS = 4                 # 1辺あたりのサブサンプル数
@@ -76,5 +81,5 @@ def write_png(n, path):
 
 
 if __name__ == "__main__":
-    for size, name in ((180, "icon-180.png"), (192, "icon-192.png"), (512, "icon-512.png")):
-        write_png(size, OUT + "/" + name)
+    for size in (180, 192, 512):
+        write_png(size, "%s/icon-%d-v%d.png" % (OUT, size, VERSION))

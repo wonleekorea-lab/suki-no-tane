@@ -92,15 +92,18 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .acts{display:flex;align-items:center;gap:26px;max-height:0;opacity:0;margin-top:0;overflow:hidden;
   transition:max-height .3s var(--ease),opacity .24s,margin-top .3s var(--ease)}
 #throw[data-state="confirm"] .acts{max-height:80px;opacity:1;margin-top:36px}
-.place{min-height:52px;padding:0 40px;border-radius:26px;border:1px solid var(--l26);background:var(--l05);
-  font-size:14px;font-weight:500;letter-spacing:.1em;transition:background .2s,border-color .2s}
+.place{min-height:52px;padding:0 42px;border-radius:26px;border:1px solid var(--l26);background:var(--l05);
+  font-size:13px;font-weight:500;letter-spacing:.3em;text-indent:.3em;transition:background .2s,border-color .2s}
 .place:active{background:var(--l09);border-color:var(--l40)}
-.drop{color:var(--l40);font-size:13px;letter-spacing:.06em}
+.drop{color:var(--l40);font-size:12px;letter-spacing:.24em;text-indent:.24em}
 .drop:active{color:var(--l86)}
 /* 止め方は、聞いている間だけ出す */
 .tip{position:absolute;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));
-  text-align:center;font-size:11.5px;letter-spacing:.14em;color:var(--l26);
+  text-align:center;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;color:var(--l26);
   opacity:0;pointer-events:none;transition:opacity .3s}
+/* 英字ラベルの共通の置き方 */
+.tip,.hint,.ghost span,.empty,.place,.route button,.drop,.cfoot,.h,.today span,
+.stats span,.dfoot,.sed .s em,.recent .r em,.toast,.toast button{text-transform:lowercase}
 #throw[data-state="live"] .tip,
 #throw[data-state="confirm"] .tip{opacity:1}
 
@@ -117,9 +120,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   will-change:transform;transition:border-color .3s,opacity .4s,filter .3s}
 .bub b{font-weight:400;display:block;line-height:1.16;word-break:break-all;margin:0 auto}
 .bub:active{--a:.17;border-color:var(--l40)}
+.bub.fresh{animation:fade .55s ease-out both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 .ghost{position:absolute;inset:0;display:grid;place-items:center;gap:0;pointer-events:none}
 .ghost[hidden]{display:none}
-.ghost span{font-size:12.5px;color:var(--l26);letter-spacing:.16em}
+.ghost span{font-size:11px;color:var(--l26);letter-spacing:.34em;text-indent:.34em}
 .ghost svg{position:absolute;opacity:.5}
 
 /* 沈殿層：行動へ送り終えたもの */
@@ -131,7 +136,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   color:var(--l40);white-space:nowrap;display:flex;align-items:center;gap:8px}
 .sed .s.habit{border:1px solid var(--l16)}
 .sed .s.plan{border:1px dashed var(--l26)}
-.sed .s em{font-style:normal;font-size:10px;letter-spacing:.14em;color:var(--l26)}
+.sed .s em{font-style:normal;font-size:9.5px;letter-spacing:.2em;color:var(--l26)}
 
 /* 種のカード */
 .card{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
@@ -143,22 +148,22 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   transition:transform .36s var(--ease),opacity .3s}
 .card.on .disc{transform:scale(1);opacity:1}
 .disc p{margin:0;font-family:var(--f);font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.62;letter-spacing:-.005em;text-align:center;text-wrap:balance}
-.disc .when{margin-top:12px;font-family:var(--f);font-size:10.5px;letter-spacing:.16em;color:var(--l26);font-variant-numeric:tabular-nums}
+.disc .when{margin-top:14px;font-family:var(--f);font-size:10px;letter-spacing:.22em;color:var(--l26);font-variant-numeric:tabular-nums}
 .route{display:flex;gap:12px;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .28s,transform .28s var(--ease)}
 .route.on{opacity:1;transform:none;pointer-events:auto}
-.route button{min-height:48px;padding:0 22px;font-size:14px;letter-spacing:.06em;border-radius:24px}
+.route button{min-height:48px;padding:0 26px;font-size:13px;letter-spacing:.24em;text-indent:.24em;border-radius:24px}
 .route .toH{border:1px solid var(--l40);background:var(--l05)}
 .route .toP{border:1px dashed var(--l40)}
-.cfoot{display:flex;gap:20px;color:var(--l26);font-size:12px;letter-spacing:.06em}
+.cfoot{display:flex;gap:26px;color:var(--l26);font-size:11px;letter-spacing:.24em;text-indent:.24em}
 .cfoot button:active{color:var(--l86)}
-.hint{font-size:11.5px;letter-spacing:.14em;color:var(--l26)}
+.hint{font-size:10.5px;letter-spacing:.34em;text-indent:.34em;color:var(--l26)}
 
 /* ── 記録 ── */
 #dash{overflow-y:auto;padding:calc(34px + env(safe-area-inset-top)) 22px calc(56px + env(safe-area-inset-bottom))}
-.h{font-size:11px;font-weight:500;letter-spacing:.2em;margin:0 0 30px;color:var(--l40)}
+.h{font-size:11px;font-weight:500;letter-spacing:.34em;margin:0 0 30px;color:var(--l40)}
 .today{display:flex;align-items:baseline;gap:11px;margin-bottom:32px}
 .today b{font-family:var(--f);font-weight:300;font-size:66px;line-height:.88;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.today span{font-size:12px;letter-spacing:.12em;color:var(--l40)}
+.today span{font-size:11px;letter-spacing:.3em;color:var(--l40)}
 .chart{display:flex;align-items:flex-end;gap:4px;height:96px;border-bottom:1px solid var(--l09);padding-bottom:0}
 .chart div{flex:1;min-width:0;background:var(--l16);border-radius:1px 1px 0 0;transition:height .5s var(--ease),background .3s}
 .chart div.now{background:var(--l86)}
@@ -167,22 +172,22 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .stats{display:grid;grid-template-columns:repeat(3,1fr);margin:34px 0 0;border-top:1px solid var(--l09)}
 .stats div{padding:17px 0 0}
 .stats b{display:block;font-family:var(--f);font-weight:300;font-size:32px;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.stats span{display:block;margin-top:8px;font-size:11px;letter-spacing:.1em;color:var(--l40)}
+.stats span{display:block;margin-top:8px;font-size:10.5px;letter-spacing:.26em;color:var(--l40)}
 .recent{margin-top:38px;border-top:1px solid var(--l09);padding-top:6px}
 .recent .r{display:flex;align-items:baseline;gap:12px;padding:13px 0;border-bottom:1px solid var(--l05)}
 .recent .r p{margin:0;flex:1;font-family:var(--f);font-size:14.5px;color:var(--l58);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.recent .r em{font-style:normal;font-size:10px;letter-spacing:.14em;color:var(--l26);flex:0 0 auto}
-.empty{font-size:13px;color:var(--l26);letter-spacing:.04em}
-.dfoot{margin-top:40px;display:flex;gap:20px;font-size:11.5px;letter-spacing:.08em;color:var(--l26)}
+.recent .r em{font-style:normal;font-size:9.5px;letter-spacing:.2em;color:var(--l26);flex:0 0 auto}
+.empty{font-size:11px;color:var(--l26);letter-spacing:.34em}
+.dfoot{margin-top:40px;display:flex;gap:24px;font-size:10.5px;letter-spacing:.22em;color:var(--l26)}
 .dfoot button:active{color:var(--l86)}
 
 /* ── 通知 ── */
-.toast{position:fixed;left:50%;bottom:calc(46px + env(safe-area-inset-bottom));transform:translate(-50%,14px);z-index:70;
+.toast{position:fixed;left:50%;bottom:calc(98px + env(safe-area-inset-bottom));transform:translate(-50%,14px);z-index:70;
   display:flex;align-items:center;gap:16px;max-width:88vw;padding:11px 18px;border-radius:23px;
   border:1px solid var(--l16);background:rgba(14,14,18,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
-  font-size:12.5px;letter-spacing:.04em;color:var(--l86);opacity:0;pointer-events:none;transition:opacity .24s,transform .24s var(--ease)}
+  font-size:12px;letter-spacing:.2em;color:var(--l86);opacity:0;pointer-events:none;transition:opacity .24s,transform .24s var(--ease)}
 .toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
-.toast button{color:var(--l58);font-size:12px;letter-spacing:.08em;flex:0 0 auto}
+.toast button{color:var(--l58);font-size:11.5px;letter-spacing:.22em;flex:0 0 auto}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.06s !important}
@@ -199,8 +204,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <button class="orb" id="orb" aria-label="押して、声に出す"></button>
       </div>
       <div class="acts">
-        <button class="place" id="place">置く</button>
-        <button class="drop" id="drop">やめる</button>
+        <button class="place" id="place">keep</button>
+        <button class="drop" id="drop">forget</button>
       </div>
     </div>
     <div class="tip" id="tip"></div>
@@ -214,7 +219,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
           <circle cx="148" cy="48" r="22" fill="none" stroke="rgba(250,250,247,.13)"></circle>
           <circle cx="126" cy="106" r="27" fill="none" stroke="rgba(250,250,247,.10)"></circle>
         </svg>
-        <span>ここに溜まる</span>
+        <span>soon</span>
       </div>
     </div>
     <div class="sed" id="sed"></div>
@@ -225,14 +230,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
           <div class="when" id="cWhen"></div>
         </div>
       </div>
-      <div class="hint" id="cHint">もう一度おす</div>
+      <div class="hint" id="cHint"></div>
       <div class="route" id="route">
-        <button class="toH" id="toH">習慣にする</button>
-        <button class="toP" id="toP">予定にする</button>
       </div>
       <div class="cfoot">
-        <button id="cPull">もっと惹かれる</button>
-        <button id="cDel">そっと消す</button>
+        <button id="cPull">want</button>
+        <button id="cDel">forget</button>
       </div>
     </div>
   </section>
@@ -332,13 +335,13 @@ var rec=null,ringT=null,useVoice=!!SR;
 function phase(){return throwPane.getAttribute('data-state')}
 function setState(s){
   throwPane.setAttribute('data-state',s);
-  track.classList.toggle('lock',s!=='idle');   // 録りかけで横に流れていかないように
+  // 固定するのは録っている間だけ。確認中は横に動ける（文は消さずに残す）
+  track.classList.toggle('lock',s==='live');
   var label=s==='live'?'押して、止める'
     :s==='confirm'?(useVoice?'押して、言い直す':'押して、書きなおす')
     :'押して、声に出す';
   orb.setAttribute('aria-label',label);
-  $('tip').textContent=s==='live'?'もう一度おして、止める'
-    :s==='confirm'?(useVoice?'おして、言い直す':'おして、書きなおす'):'';
+  $('tip').textContent=s==='live'?'listening':s==='confirm'?'again':'';
   if(s==='idle')heard.textContent='';
 }
 
@@ -417,7 +420,7 @@ $('place').addEventListener('click',function(){
   flyToBox(t);
   setState('idle');
   if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
-  say('置いた','取り消す',function(){
+  say('kept','undo',function(){
     var i=state.captures.map(function(x){return x.id}).indexOf(c.id);
     if(i>=0){state.captures.splice(i,1);save();build();drawDash()}
   });
@@ -491,6 +494,7 @@ function build(){
     el.setAttribute('aria-label',c.text);
     el.addEventListener('click',function(){openCard(c.id)});
     jar.appendChild(el);
+    if(!o)el.classList.add('fresh');
     var b={id:c.id,el:el,r:r,x:o?o.x:0,y:o?o.y:0,vx:o?o.vx:0,vy:o?o.vy:0};
     if(!o)seed(b);
     return b;
@@ -560,7 +564,7 @@ function drawSed(){
     var b=document.createElement('button');
     b.className='s '+(c.status==='growing'?'habit':'plan');
     var k=keyword(c.text);
-    b.innerHTML='<em>'+(c.status==='growing'?'習慣':'予定')+'</em>'+esc(k.length>10?k.slice(0,10)+'…':k);
+    b.innerHTML='<em>'+(c.status==='growing'?'habit':'plan')+'</em>'+esc(k.length>10?k.slice(0,10)+'…':k);
     b.addEventListener('click',function(){openCard(c.id)});
     sed.appendChild(b);
   });
@@ -572,23 +576,25 @@ function find(id){return state.captures.filter(function(c){return c.id===id})[0]
 function openCard(id){
   var c=find(id);if(!c)return;
   cur=c;
+  var n=c.text.length;
   $('cText').textContent=c.text;
-  $('cWhen').textContent=(dayOf(c.createdAt)||'').replace(/-/g,'.')+(c.pull>1?'　惹かれ '+c.pull:'');
+  $('cText').style.fontSize=(n>96?14.5:n>56?16.5:n>30?19:21)+'px';
+  $('cWhen').textContent=(dayOf(c.createdAt)||'').replace(/-/g,'.')+(c.pull>1?'  ·  want '+c.pull:'');
   var sent=(c.status==='growing'||c.status==='reserved');
   route.innerHTML='';
   if(sent){
     var back=document.createElement('button');back.className='toP';
-    back.textContent='箱に戻す';back.addEventListener('click',function(){back2box(c)});
+    back.textContent='back';back.addEventListener('click',function(){back2box(c)});
     route.appendChild(back);
-    cHint.textContent=(c.status==='growing'?'習慣へ送ってある':'予定へ送ってある');
+    cHint.textContent=(c.status==='growing'?'habit':'plan');
     route.classList.add('on');
   }else{
-    var h=document.createElement('button');h.className='toH';h.textContent='習慣にする';
+    var h=document.createElement('button');h.className='toH';h.textContent='habit';
     h.addEventListener('click',function(){send(c,'habit')});
-    var p=document.createElement('button');p.className='toP';p.textContent='予定にする';
+    var p=document.createElement('button');p.className='toP';p.textContent='plan';
     p.addEventListener('click',function(){send(c,'plan')});
     route.appendChild(h);route.appendChild(p);
-    cHint.textContent='もう一度おす';
+    cHint.textContent='press';
     route.classList.remove('on');
   }
   card.classList.add('on');track.classList.add('lock');
@@ -598,8 +604,8 @@ function closeCard(){card.classList.remove('on');track.classList.remove('lock');
 disc.addEventListener('click',function(e){
   e.stopPropagation();
   if(!cur)return;
-  if(!route.classList.contains('on')){route.classList.add('on');cHint.textContent='どちらへ送る'}
-  else if(cur.status==='inbox'||cur.status==='resting'){route.classList.remove('on');cHint.textContent='もう一度おす'}
+  if(!route.classList.contains('on')){route.classList.add('on');cHint.textContent='where'}
+  else if(cur.status==='inbox'||cur.status==='resting'){route.classList.remove('on');cHint.textContent='press'}
 });
 card.addEventListener('click',function(e){if(e.target===card)closeCard()});
 
@@ -617,23 +623,23 @@ function send(c,to){
   c.updatedAt=t;save();
   if(navigator.vibrate)try{navigator.vibrate(14)}catch(e){}
   closeCard();
-  say(to==='habit'?'習慣へ送った':'予定へ送った');
+  say(to==='habit'?'habit':'plan');
 }
 function back2box(c){
   state.habits=state.habits.filter(function(h){return h.captureId!==c.id});
   state.reservations=state.reservations.filter(function(r){return r.captureId!==c.id});
-  c.status='inbox';c.updatedAt=nowIso();save();closeCard();say('箱に戻した');
+  c.status='inbox';c.updatedAt=nowIso();save();closeCard();say('back');
 }
 $('cPull').addEventListener('click',function(e){
   e.stopPropagation();if(!cur)return;
   cur.pull=(cur.pull||1)+2;cur.updatedAt=nowIso();save();
-  $('cWhen').textContent=(dayOf(cur.createdAt)||'').replace(/-/g,'.')+'　惹かれ '+cur.pull;
-  say('大きくした');
+  $('cWhen').textContent=(dayOf(cur.createdAt)||'').replace(/-/g,'.')+'  ·  want '+cur.pull;
+  say('want');
 });
 $('cDel').addEventListener('click',function(e){
   e.stopPropagation();if(!cur)return;
   var c=cur;
-  say('消していい？','消す',function(){
+  say('forget?','yes',function(){
     state.captures=state.captures.filter(function(x){return x.id!==c.id});
     state.habits=state.habits.filter(function(h){return h.captureId!==c.id});
     state.reservations=state.reservations.filter(function(r){return r.captureId!==c.id});
@@ -661,26 +667,26 @@ function drawDash(){
   }).join('');
 
   $('dash').innerHTML=
-    '<h1 class="h">記録</h1>'+
-    '<div class="today"><b>'+counts[13]+'</b><span>今日 投げた</span></div>'+
+    '<h1 class="h">days</h1>'+
+    '<div class="today"><b>'+counts[13]+'</b><span>today</span></div>'+
     '<div class="chart">'+bars+'</div>'+
-    '<div class="axis"><span>'+days[0].slice(5).replace('-','.')+'</span><span>14日</span><span>'+days[13].slice(5).replace('-','.')+'</span></div>'+
+    '<div class="axis"><span>'+days[0].slice(5).replace('-','.')+'</span><span></span><span>'+days[13].slice(5).replace('-','.')+'</span></div>'+
     '<div class="stats">'+
-      '<div><b>'+inbox+'</b><span>箱にある</span></div>'+
-      '<div><b>'+toH+'</b><span>習慣へ</span></div>'+
-      '<div><b>'+toP+'</b><span>予定へ</span></div>'+
+      '<div><b>'+inbox+'</b><span>held</span></div>'+
+      '<div><b>'+toH+'</b><span>habit</span></div>'+
+      '<div><b>'+toP+'</b><span>plan</span></div>'+
     '</div>'+
     '<div class="recent">'+(sent.length
-      ? sent.map(function(c){return '<div class="r"><p>'+esc(c.text)+'</p><em>'+(c.status==='growing'?'習慣':'予定')+'</em></div>'}).join('')
-      : '<p class="empty">まだ行動へ送ったものはない。</p>')+
+      ? sent.map(function(c){return '<div class="r"><p>'+esc(c.text)+'</p><em>'+(c.status==='growing'?'habit':'plan')+'</em></div>'}).join('')
+      : '<p class="empty">quiet</p>')+
     '</div>'+
-    '<div class="dfoot"><button id="exp">書き出す</button><span>'+state.captures.length+' 件を、この端末に保存中</span></div>';
+    '<div class="dfoot"><button id="exp">export</button><span>'+state.captures.length+' kept</span></div>';
 
   var exp=$('exp');
   if(exp)exp.addEventListener('click',function(){
     var json=JSON.stringify(state,null,2);
     if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(json).then(function(){say('全データをコピーした')},function(){say('コピーできなかった')});
+      navigator.clipboard.writeText(json).then(function(){say('copied')},function(){say('コピーできなかった')});
     }else say('コピーに対応していない');
   });
 }

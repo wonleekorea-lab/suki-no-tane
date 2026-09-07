@@ -17,14 +17,21 @@
 
 ## 使う
 
+**https://wonleekorea-lab.github.io/suki-no-tane/**
+
 ### iPhone に置く（本命）
 
-音声入力（`webkitSpeechRecognition`）は **https か localhost でしか動かない**。
-`file://` で開いてもマイクは使えないので、どこか静的ホスティングに置いて Safari で開き、
-共有メニューから「ホーム画面に追加」する。`manifest.json` と `sw.js` があるので、
-追加後はアドレスバーのない全画面で立ち上がり、オフラインでも起動する。
+上のURLを Safari で開き、共有メニューから「ホーム画面に追加」。
+`manifest.json` と `sw.js` があるので、追加後はアドレスバーのない全画面で立ち上がり、
+オフラインでも起動する（Sokugan と同じ形）。
 
-置き先の候補：GitHub Pages、Netlify Drop、Cloudflare Pages（どれも `suki-no-tane/` の中身をそのまま上げるだけ）。
+音声入力（`webkitSpeechRecognition`）は **https か localhost でしか動かない**。
+`file://` で開いてもマイクは使えないので、必ず上のURLか、下の手元サーバから開くこと。
+
+### 配信
+
+`wonleekorea-lab/suki-no-tane` の `main` ブランチ直下を GitHub Pages がそのまま配信する。
+`git push origin main` すればビルドが走り、1〜2分で反映される。
 
 ### 手元で見る
 

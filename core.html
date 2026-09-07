@@ -218,6 +218,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       </div>
       <div class="cfoot">
         <button id="cPull">want</button>
+        <button id="cLess">less</button>
         <button id="cDel">forget</button>
       </div>
     </div>
@@ -429,18 +430,39 @@ var jar=$('jar'),sed=$('sed'),ghost=$('ghost');
 var bubbles=[],W=0,H=0,raf=null,idleFrames=0;
 
 /* 核になる語だけを抜く。形態素解析は積まない。
-   漢字・カタカナ・英数の連なりを語とみなし、「の」でつながる語はひとつに束ねる。
-   いちばん長い語を採る（同じ長さなら先に出たほう）。動詞は1字で残ることが多く、自然に負ける。 */
+
+   漢字・カタカナ・英数の連なりを「語」とみなす。ひらがな1字を挟む複合語はつなぐ
+   （編み物・買い物）。ただしその1字が助詞なら、そこは語の切れ目（陶芸を／海に）。
+
+   どれを採るかは長さでは決めない。「歌が上手になりたい」では長い「上手」が勝ってしまう。
+   日本語では欲しいものが「を」「が」で示されるので、そこを最優先で見る。
+   加えて、程度や質を言うだけの語（上手・普通・大事…）は核になりにくいので下げる。 */
+var STOP=['上手','下手','得意','苦手','普通','普段','大事','大切','必要','本当','一番','沢山','自体'];
+// 「毎日走りたい」のように漢字が続くと切れ目がない。時を言う語だけ、前から切り離す
+var WHEN=['毎日','毎朝','毎晩','毎週','毎月','毎年','今日','明日','明後日','来週','来月','今度','最近','今年'];
+
 function keyword(t){
   var s=String(t).trim()
-    .replace(/^(えっと|えーと|えー|あの|あのー|んー|なんか|そうだな|うーん|やっぱり|ちょっと)[、,。\s]*/,'')
+    .replace(/^(えっと|えーと|えー|あの|あのー|んー|なんか|そうだな|うーん|やっぱり|ちょっと|もっと)[、,。\s]*/,'')
     .replace(/[。、,.!?！？\s]+$/,'');
   var re=/[\u3005\u3006\u4E00-\u9FFF\u30A1-\u30FF\uFF66-\uFF9FA-Za-z0-9\uFF10-\uFF19]+/g;
   var runs=[],m;
   while((m=re.exec(s))!==null)runs.push({t:m[0],i:m.index,e:m.index+m[0].length,tail:null});
   if(!runs.length)return s.slice(0,6)||String(t).trim();
-  // ひらがな1字を挟んで隣り合う語はつなぐ（編み物・買い物・夜の海）。
-  // ただしその1字が助詞なら、そこは語の切れ目なのでつながない（陶芸を／海に）。
+
+  var split=[];
+  runs.forEach(function(r){
+    for(var k=0;k<WHEN.length;k++){
+      if(r.t.length>WHEN[k].length&&r.t.indexOf(WHEN[k])===0){
+        split.push({t:WHEN[k],i:r.i,e:r.i+WHEN[k].length,tail:null});
+        split.push({t:r.t.slice(WHEN[k].length),i:r.i+WHEN[k].length,e:r.e,tail:null});
+        return;
+      }
+    }
+    split.push(r);
+  });
+  runs=split;
+
   var PART='はがをにへとでもやかねよさなぞわ';
   var merged=[runs[0]];
   for(var i=1;i<runs.length;i++){
@@ -450,12 +472,22 @@ function keyword(t){
       merged[merged.length-1]={t:p.t+sep+c.t,i:p.i,e:c.e,tail:c.t};
     else merged.push(c);
   }
-  var best=merged[0];
-  for(var j=1;j<merged.length;j++)if(merged[j].t.length>best.t.length)best=merged[j];
+
+  var best=null,top=-1e9;
+  for(var j=0;j<merged.length;j++){
+    var g=merged[j];
+    // 直後が「を」「が」なら、それが欲しいもの。送りがな1字は語に含める（早起き＋が）
+    var mk=/^([\u3041-\u3096]?)[をが]/.exec(s.slice(g.e));
+    var word=g.t+(mk?mk[1]:'');
+    var score=word.length+(mk?100:0)-(STOP.indexOf(g.t)>=0?5:0);
+    if(score>top){top=score;best={t:word,tail:g.tail}}
+  }
+
   var w=best.t;
-  if(w.length>7&&best.tail)w=best.tail;          // 「の」で伸びすぎたら頭の名詞だけ
+  if(w.length>7&&best.tail)w=best.tail;   // 「の」で伸びすぎたら頭の名詞だけ
   return w.length>8?w.slice(0,8):w;
 }
+
 function radius(c){
   var base=30+9*Math.sqrt(Math.max(1,c.pull)-1)*1.7;
   var len=Math.min(keyword(c.text).length,26)*0.55;
@@ -554,7 +586,7 @@ function drawSed(){
 }
 
 /* ───────── 種のカード ───────── */
-var card=$('card'),disc=$('disc'),route=$('route'),cHint=$('cHint'),cur=null;
+var card=$('card'),disc=$('disc'),route=$('route'),cHint=$('cHint'),cur=null,openBonus=false;
 function find(id){return state.captures.filter(function(c){return c.id===id})[0]}
 function openCard(id){
   var c=find(id);if(!c)return;
@@ -581,7 +613,8 @@ function openCard(id){
     route.classList.remove('on');
   }
   card.classList.add('on');track.classList.add('lock');
-  if(!sent){c.pull=(c.pull||1)+1;c.updatedAt=nowIso();save()}
+  openBonus=false;
+  if(!sent){c.pull=(c.pull||1)+1;openBonus=true;c.updatedAt=nowIso();save()}
 }
 function closeCard(){card.classList.remove('on');track.classList.remove('lock');cur=null;build();drawDash()}
 disc.addEventListener('click',function(e){
@@ -613,12 +646,17 @@ function back2box(c){
   state.reservations=state.reservations.filter(function(r){return r.captureId!==c.id});
   c.status='inbox';c.updatedAt=nowIso();save();closeCard();say('back');
 }
-$('cPull').addEventListener('click',function(e){
-  e.stopPropagation();if(!cur)return;
-  cur.pull=(cur.pull||1)+2;cur.updatedAt=nowIso();save();
-  $('cWhen').textContent=(dayOf(cur.createdAt)||'').replace(/-/g,'.')+'  ·  want '+cur.pull;
-  say('want');
-});
+function adjust(d){
+  if(!cur)return;
+  if(openBonus){cur.pull=Math.max(1,(cur.pull||1)-1);openBonus=false}  // 見ただけの分を戻す
+  cur.pull=Math.max(1,(cur.pull||1)+d);
+  cur.updatedAt=nowIso();save();
+  $('cWhen').textContent=(dayOf(cur.createdAt)||'').replace(/-/g,'.')
+    +(cur.pull>1?'  ·  want '+cur.pull:'');
+  say(d>0?'want':'less');
+}
+$('cPull').addEventListener('click',function(e){e.stopPropagation();adjust(2)});
+$('cLess').addEventListener('click',function(e){e.stopPropagation();adjust(-2)});
 $('cDel').addEventListener('click',function(e){
   e.stopPropagation();if(!cur)return;
   var c=cur;

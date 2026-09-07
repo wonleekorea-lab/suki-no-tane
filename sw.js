@@ -1,5 +1,5 @@
 /* アプリシェルのオフライン保持。データは localStorage 側にあり、ここでは扱わない。 */
-var CACHE = 'suki-no-tane-v2';
+var CACHE = 'suki-no-tane-v3';
 var SHELL = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 

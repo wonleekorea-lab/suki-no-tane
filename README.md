@@ -54,7 +54,8 @@ python3 -m http.server 8910 --directory "suki-no-tane"
 | `artifact.html` | 生成物。`<html>` の外殻を持たない body 相当（Artifact 公開用） |
 | `manifest.json` | ホーム画面追加時の名前・色・アイコン |
 | `sw.js` | アプリシェルのオフラインキャッシュ |
-| `icon-180.png` / `icon-512.png` | アイコン（オーブと同じ形を生成したもの） |
+| `icon-180.png` / `icon-192.png` / `icon-512.png` | アイコン。`tools/make-icons.py` の生成物 |
+| `tools/make-icons.py` | アイコン生成。図案は「声に出した瞬間」＝押す丸と広がる波紋。半径・線幅・濃さの比を変えて再生成する |
 | `_demo.html` | 見た目確認用の使い捨て。偽データを差し込んだだけで、実データには触れない。消してよい |
 
 編集したら必ず：

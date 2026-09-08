@@ -46,7 +46,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 .said{width:100%;max-width:19em;text-align:center;text-wrap:balance;
   font-weight:300;font-size:clamp(20px,5.6vw,27px);line-height:1.55;letter-spacing:-.005em;
-  max-height:0;opacity:0;margin-bottom:0;overflow:hidden;
+  word-break:auto-phrase;max-height:0;opacity:0;margin-bottom:0;overflow:hidden;
   transition:max-height .34s var(--ease),opacity .24s,margin-bottom .34s var(--ease)}
 .said:focus{outline:none}
 .said:empty::before{content:"speak";color:var(--l16);letter-spacing:.34em}
@@ -86,6 +86,29 @@ body.kb #throw[data-state="confirm"] .acts{margin-top:22px}
 .stats span,.dfoot,.sed .s em,.recent .r em,.toast,.toast button,.said:empty::before{text-transform:lowercase}
 /* キーボードに隠れるものは、出ているあいだ引っ込める */
 body.kb #throw .tip,body.kb .dots{opacity:0}
+
+/* ── めくる層：思いつかない日に、人が実際やっていたことを繰る ── */
+.muse{position:absolute;inset:0;z-index:20;display:grid;place-items:center;
+  padding:calc(env(safe-area-inset-top) + 40px) 30px calc(env(safe-area-inset-bottom) + 76px);
+  background:var(--void);opacity:0;pointer-events:none;transition:opacity .3s}
+.muse.on{opacity:1;pointer-events:auto;touch-action:none}
+.mcard{max-width:20em;text-align:center}
+.mwho{font-size:10.5px;letter-spacing:.2em;color:var(--l40);margin-bottom:24px}
+.mwhat{font-weight:300;font-size:clamp(24px,7vw,32px);line-height:1.48;letter-spacing:-.015em;
+  text-wrap:balance;word-break:auto-phrase;margin-bottom:22px}
+.mnote{font-size:13.5px;line-height:1.92;color:var(--l40);text-wrap:pretty;word-break:auto-phrase}
+.mcard.in{animation:drop .42s var(--ease) both}
+@keyframes drop{from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:none}}
+.mtip{position:absolute;left:0;right:0;bottom:calc(46px + env(safe-area-inset-bottom));
+  text-align:center;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;color:var(--l16)}
+
+/* 引き下ろせる、という気配だけ置く。文字は使わない */
+.pull{position:absolute;top:calc(env(safe-area-inset-top) + 18px);left:50%;
+  width:26px;height:2px;border-radius:1px;background:var(--l26);
+  transform:translateX(-50%);opacity:0;transition:opacity .4s}
+#throw[data-state="idle"] .pull{animation:nudge 4.8s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translate(-50%,0);opacity:.35}50%{transform:translate(-50%,5px);opacity:1}}
+body.kb .pull{animation:none;opacity:0}
 
 /* ── 種が箱へ飛ぶ ── */
 .fly{position:fixed;z-index:60;pointer-events:none;font-family:var(--f);font-size:16px;color:var(--l86);
@@ -127,7 +150,7 @@ body.kb #throw .tip,body.kb .dots{opacity:0}
   background:var(--l05);display:grid;place-items:center;padding:13%;transform:scale(.8);opacity:0;
   transition:transform .36s var(--ease),opacity .3s}
 .card.on .disc{transform:scale(1);opacity:1}
-.disc p{margin:0;font-family:var(--f);font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.62;letter-spacing:-.005em;text-align:center;text-wrap:balance}
+.disc p{margin:0;font-family:var(--f);font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.62;letter-spacing:-.005em;text-align:center;text-wrap:balance;word-break:auto-phrase}
 .disc .when{margin-top:14px;font-family:var(--f);font-size:10px;letter-spacing:.22em;color:var(--l26);font-variant-numeric:tabular-nums}
 .route{display:flex;gap:12px;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .28s,transform .28s var(--ease)}
 .route.on{opacity:1;transform:none;pointer-events:auto}
@@ -189,6 +212,15 @@ body.kb #throw .tip,body.kb .dots{opacity:0}
       </div>
     </div>
     <div class="tip" id="tip"></div>
+    <div class="pull"></div>
+    <div class="muse" id="muse" aria-hidden="true">
+      <div class="mcard" id="mcard">
+        <div class="mwho" id="mWho"></div>
+        <div class="mwhat" id="mWhat"></div>
+        <div class="mnote" id="mNote"></div>
+      </div>
+      <div class="mtip">up</div>
+    </div>
   </section>
 
   <section class="pane" id="box" aria-label="箱">
@@ -352,6 +384,95 @@ $('place').addEventListener('click',function(){
     if(i>=0){state.captures.splice(i,1);save();build();drawDash()}
   });
   build();
+});
+
+/* ───────── めくる層 ─────────
+   思い浮かばない日のための、繰るだけの層。中身は記録の残っている事実だけ。
+   ◯ の面で上から下へなぞると開き、なぞるたびに次が出る。下から上へなぞると ◯ に戻る。 */
+var MUSE=[
+{who:"アガサ・クリスティー",what:"板の上に立った",note:"1922年、世界周遊の途中で南アフリカとハワイでサーフィンを覚えた。立って波に乗れた、当時数少ない英国人のひとり。"},
+{who:"伊能忠敬",what:"50歳から測り直した",note:"家業を息子に譲ってから江戸で天文学を学び直し、55歳から17年かけて日本中を歩いて測量した。"},
+{who:"リチャード・ファインマン",what:"ボンゴを叩いた",note:"物理と並行して打楽器を続け、バレエの伴奏も務めた。絵も習い、別名で個展を開いた。錠前破りも趣味だった。"},
+{who:"チャールズ・ダーウィン",what:"フジツボを8年調べた",note:"種の起源を書く前、フジツボの分類だけに8年を費やした。夜は毎晩妻とバックギャモンを指し、勝敗を何年も記録し続けた。"},
+{who:"ウィンストン・チャーチル",what:"40歳で絵を始めた",note:"生涯で500点以上の油絵を描いた。自邸では煉瓦も自分で積み、建設労働組合に加入した。"},
+{who:"ウラジーミル・ナボコフ",what:"蝶を追った",note:"ハーバードの比較動物学博物館で鱗翅類の標本を担当した。チェスの問題も自作し、詩とまとめて一冊にした。"},
+{who:"スティーブ・ジョブズ",what:"カリグラフィに潜り込んだ",note:"大学を中退したあと、単位にならないカリグラフィの授業に出続けた。10年後、Macの書体設計になった。"},
+{who:"村上春樹",what:"毎日走る",note:"33歳から走り始め、フルマラソンを毎年、100kmのウルトラマラソンも走った。小説を書く前はジャズ喫茶を営んでいた。"},
+{who:"ベンジャミン・フランクリン",what:"泳ぎを工夫した",note:"少年時代に手のひらに付ける水かきを自作した。国際水泳殿堂に入っている。毎朝「今日どんな善をなすか」と自分に問う日課を書き残した。"},
+{who:"アレクサンダー・フレミング",what:"菌で絵を描いた",note:"色のつく細菌を寒天の上に並べて絵を作った。ペニシリンの発見も、片づけていない培地から生まれた。"},
+{who:"J.R.R.トールキン",what:"言語を作った",note:"少年期から架空の言語を作り続け、それを「密かな悪徳」と呼んだ。物語のほうが、言語のために後から作られた。"},
+{who:"マイルス・デイヴィス",what:"ジムに通った",note:"ボクシングの練習を欠かさず、ボクサーの動きから間合いの取り方を学んだと語っている。"},
+{who:"アンソニー・ボーディン",what:"50代で柔術を始めた",note:"50代後半からブラジリアン柔術を始め、毎日稽古して青帯を取り、大会にも出た。"},
+{who:"ビル・ゲイツ",what:"年に二度こもる",note:"「Think Week」と呼び、山小屋に一人で籠って本と論文だけを読む週を年に二度作った。"},
+{who:"ジョージア・オキーフ",what:"骨を拾って歩いた",note:"ニューメキシコの砂漠を長く歩き、動物の骨や石を拾って持ち帰り、それを描いた。"},
+{who:"ジョン・コルトレーン",what:"音の出ない練習をした",note:"移動中もマウスピースだけを咥えて運指を繰り返した。音階の練習を生涯やめなかった。"},
+{who:"南方熊楠",what:"粘菌を集めた",note:"独学で菌類と粘菌を採集し、標本と写生を膨大に残した。ロンドンでは大英博物館に通い詰め、筆写を続けた。"},
+{who:"牧野富太郎",what:"小学校を中退した",note:"学校をやめたあと独学で植物を採集し続け、40万点の標本を残し、1500種以上に名前を与えた。"},
+{who:"手塚治虫",what:"昆虫が先だった",note:"少年時代は昆虫採集に没頭し、オサムシから筆名を取った。医学博士でもある。"},
+{who:"大谷翔平",what:"81マスを埋めた",note:"高校時代、中心に目標を置いた9×9の表に、そのための行動を81個書き出した。運や人間性の欄まで作った。"},
+{who:"イチロー",what:"同じ所作を繰り返した",note:"打席前の動作、道具の手入れ、食事まで毎日同じ形にした。変わったところだけが見えるようにするため。"},
+{who:"黒澤明",what:"絵コンテを自分で描いた",note:"映画のための絵を水彩で大量に描いた。撮れなかった企画は、絵だけが残っている。"},
+{who:"マリ・キュリー",what:"自転車で新婚旅行",note:"1895年、ピエールと二台の自転車を買い、フランスの田舎を走って新婚旅行にした。"},
+{who:"レオナルド・ダ・ヴィンチ",what:"鏡文字で書いた",note:"手稿は左右反転の文字で書かれている。鳥が飛ぶところを観察し、その仕組みを何枚も描いた。"},
+{who:"アイザック・ニュートン",what:"大学が閉まった年",note:"1665年、疫病で大学が閉鎖され故郷に戻った。その1年半で微積分・光学・重力の着想がまとまった。"},
+{who:"フリーダ・カーロ",what:"日記に描いた",note:"晩年の10年、文章と絵が混ざった日記を描き続けた。庭では猿と鹿を飼っていた。"},
+{who:"チャールズ・シュルツ",what:"リンクを建てた",note:"アイスホッケーを続け、自分の町にスケートリンクを作って通った。"},
+{who:"ヘディ・ラマー",what:"周波数を跳ばせた",note:"俳優として働きながら、通信の周波数を次々切り替える方式を考案して特許を取った。無線技術の土台になった。"},
+{who:"本田宗一郎",what:"手で覚えた",note:"高等小学校を出て自動車修理の丁稚から始めた。生涯、現場で自分の手を動かすことをやめなかった。"},
+{who:"グレン・グールド",what:"鼻歌が録音に残った",note:"弾きながら歌ってしまう癖を直さず、そのまま録音に残した。技師が何度マイクを遠ざけても消えなかった。"},
+{who:"アルベルト・アインシュタイン",what:"ヴァイオリンを持ち歩いた",note:"考えが行き詰まるとモーツァルトを弾いた。ヨットも好んだが、生涯泳げなかった。"},
+{who:"エドワード・ホッパー",what:"一人で映画館に座った",note:"行き詰まると映画館に入り、暗がりで何時間も過ごした。光の当たり方を、そこで見ていた。"}
+];
+var muse=$('muse'),museOn=false,deck=[],deckI=0;
+
+function shuffle(a){
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}
+  return a;
+}
+function nextMuse(){
+  if(deckI>=deck.length){
+    var last=deck.length?deck[deck.length-1]:null;
+    deck=shuffle(MUSE.slice());
+    if(last&&deck[0]===last)deck.push(deck.shift());   // ひと巡りした直後の重複を避ける
+    deckI=0;
+  }
+  var m=deck[deckI++];
+  $('mWho').textContent=m.who;
+  $('mWhat').textContent=m.what;
+  $('mNote').textContent=m.note;
+  var c=$('mcard');c.classList.remove('in');void c.offsetWidth;c.classList.add('in');
+}
+function openMuse(){
+  if(museOn)return;
+  museOn=true;muse.classList.add('on');muse.setAttribute('aria-hidden','false');
+  track.classList.add('lock');
+  nextMuse();
+}
+function closeMuse(){
+  if(!museOn)return;
+  museOn=false;muse.classList.remove('on');muse.setAttribute('aria-hidden','true');
+  track.classList.remove('lock');
+}
+
+/* 縦になぞったときだけ拾う。横は面の移動に残す */
+var sy=0,sx=0,swiping=false;
+throwPane.addEventListener('touchstart',function(e){
+  if(e.touches.length!==1){swiping=false;return}
+  sy=e.touches[0].clientY;sx=e.touches[0].clientX;swiping=true;
+},{passive:true});
+throwPane.addEventListener('touchend',function(e){
+  if(!swiping)return;swiping=false;
+  var t=e.changedTouches[0],dy=t.clientY-sy,dx=t.clientX-sx;
+  if(Math.abs(dy)<58||Math.abs(dy)<Math.abs(dx)*1.4)return;
+  if(dy>0){ if(museOn)nextMuse(); else if(phase()==='idle')openMuse(); }
+  else if(museOn)closeMuse();
+},{passive:true});
+
+// 手元のブラウザでも繰れるように
+document.addEventListener('keydown',function(e){
+  if(pane!==1)return;
+  if(e.key==='ArrowDown'){ if(museOn)nextMuse(); else if(phase()==='idle')openMuse(); }
+  else if(e.key==='ArrowUp'||e.key==='Escape')closeMuse();
 });
 
 /* キーボードのぶんだけ下を空ける。dvh はキーボードに反応しないので visualViewport を見る */

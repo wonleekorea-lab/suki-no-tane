@@ -102,7 +102,8 @@ body.kb #throw[data-state="confirm"] .acts{margin-top:22px}
 #throw[data-state="confirm"] .tip{opacity:1}
 /* 英字ラベルの共通の置き方 */
 .tip,.hint,.ghost span,.empty,.place,.route button,.drop,.cfoot,.h,.today span,
-.stats span,.dfoot,.sed .s em,.recent .r em,.toast,.toast button,.said:empty::before{text-transform:lowercase}
+.stats span,.dfoot,.recent .r em,.toast,.toast button,.said:empty::before,
+.memo h2,.mAdd,.hhead span,.hempty,.htip{text-transform:lowercase}
 /* キーボードに隠れるものは、出ているあいだ引っ込める */
 body.kb #throw .tip,body.kb .dots{opacity:0}
 
@@ -149,26 +150,80 @@ body.kb .pull{animation:none;opacity:0}
 .ghost span{font-size:11px;color:var(--l26);letter-spacing:.34em;text-indent:.34em}
 .ghost svg{position:absolute;opacity:.5}
 
-/* 沈殿層：行動へ送り終えたもの */
-.sed{flex:0 0 auto;border-top:1px solid var(--l09);padding:13px 16px calc(30px + env(safe-area-inset-bottom));
-  display:flex;gap:9px;overflow-x:auto;align-items:center;scrollbar-width:none}
-.sed::-webkit-scrollbar{display:none}
-.sed:empty{display:none}
-.sed .s{flex:0 0 auto;height:34px;padding:0 15px;border-radius:17px;font-family:var(--f);font-size:12.5px;
-  color:var(--l40);white-space:nowrap;display:flex;align-items:center;gap:8px}
-.sed .s.habit{border:1px solid var(--l16)}
-.sed .s.plan{border:1px dashed var(--l26)}
-.sed .s em{font-style:normal;font-size:9.5px;letter-spacing:.2em;color:var(--l26)}
+/* ── 天国：送り終えたものが昇っていく層。白と黒を入れ替える ── */
+.heaven{position:absolute;inset:0;z-index:22;overflow:hidden;
+  background:var(--lume);color:var(--void);
+  opacity:0;pointer-events:none;transition:opacity .44s var(--ease)}
+.heaven.on{opacity:1;pointer-events:auto;touch-action:none}
+.hsky{position:absolute;inset:0}
+/* 昇るほど光に溶ける。数字と泡が重なって読めなくなるのも、これで防ぐ */
+.heaven::before,.heaven::after{content:"";position:absolute;left:0;right:0;z-index:1;pointer-events:none}
+.heaven::before{top:0;height:36%;
+  background:linear-gradient(to bottom,var(--lume) 26%,rgba(250,250,247,.72) 58%,rgba(250,250,247,0))}
+.heaven::after{bottom:0;height:16%;
+  background:linear-gradient(to top,var(--lume) 18%,rgba(250,250,247,0))}
+.hb{position:absolute;top:0;left:0;display:grid;place-items:center;border-radius:50%;
+  background:rgba(8,8,10,var(--a,.05));border:1px solid rgba(8,8,10,.11);
+  color:rgba(8,8,10,.82);text-align:center;padding:0;overflow:hidden;will-change:transform}
+.hb b{font-weight:400;display:block;line-height:1.16;word-break:break-all;margin:0 auto}
+.hhead{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 38px);
+  text-align:center;z-index:2;pointer-events:none}
+.hhead b{display:block;font-weight:300;font-size:54px;line-height:1;letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums;color:rgba(8,8,10,.88)}
+.hhead span{display:block;margin-top:12px;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;
+  color:rgba(8,8,10,.38)}
+.hempty{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:11px;letter-spacing:.34em;text-indent:.34em;color:rgba(8,8,10,.26)}
+.hempty[hidden]{display:none}
+.htip{position:absolute;left:0;right:0;bottom:calc(46px + env(safe-area-inset-bottom));
+  text-align:center;font-size:10.5px;letter-spacing:.34em;text-indent:.34em;
+  color:rgba(8,8,10,.22);z-index:2}
+body.sky .dots{opacity:0}
+
+/* 昇っていける、という気配。箱の下端に置く。文字は使わない */
+.rise{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 34px);left:50%;
+  width:26px;height:2px;border-radius:1px;background:var(--l26);
+  transform:translateX(-50%);opacity:0;animation:lift 4.8s ease-in-out infinite}
+@keyframes lift{0%,100%{transform:translate(-50%,0);opacity:.35}50%{transform:translate(-50%,-5px);opacity:1}}
+
+/* 送った瞬間に弾けて、上へ抜けていく */
+.burst{position:absolute;width:0;height:0;z-index:30;pointer-events:none}
+.burst i{position:absolute;left:0;top:0;border-radius:50%;background:var(--lume);opacity:0;
+  animation:pop .86s cubic-bezier(.14,.7,.3,1) forwards}
+@keyframes pop{
+  0%{opacity:0;transform:translate(0,0) scale(.35)}
+  10%{opacity:1}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}
+}
+.soul{position:absolute;z-index:31;pointer-events:none;font-size:16px;color:var(--l86);
+  white-space:nowrap;animation:ascend 1.2s cubic-bezier(.3,.5,.2,1) forwards}
+@keyframes ascend{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.82)}
+  20%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-460%) scale(.7)}
+}
 
 /* 種のカード */
 .card{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
   padding:0 22px calc(46px + env(safe-area-inset-bottom));background:rgba(8,8,10,.78);
   -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .26s}
 .card.on{opacity:1;pointer-events:auto}
-.disc{width:min(76vw,320px);aspect-ratio:1;border-radius:50%;border:1px solid var(--l16);
-  background:var(--l05);display:grid;place-items:center;padding:13%;transform:scale(.8);opacity:0;
+.disc{position:relative;width:min(76vw,320px);aspect-ratio:1;border-radius:50%;border:1px solid var(--l16);
+  background:var(--l05);display:grid;place-items:center;padding:13%;
+  transform:scale(.8);opacity:0;touch-action:none;
   transition:transform .36s var(--ease),opacity .3s}
-.card.on .disc{transform:scale(1);opacity:1}
+.card.on .disc{transform:scale(var(--s,1));opacity:1}
+/* 回している最中だけ、追随を速くする */
+.disc.turning,.disc.turning .discIn,.disc.turning .mark{transition:transform .09s linear}
+/* 円が大きくなっても文字の大きさは変えない（逆にかけ戻す） */
+.discIn{transform:scale(calc(1 / var(--s,1)));transition:transform .36s var(--ease)}
+/* 縁の目印。どれだけ回したかが見える */
+.mark{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  transform:rotate(var(--rot,0deg));transition:transform .09s linear}
+.mark::before{content:"";position:absolute;top:-4px;left:50%;width:7px;height:7px;margin-left:-3.5px;
+  border-radius:50%;background:var(--l58)}
+/* 弾けている最中は、中身を引っ込めて見せ場を空ける */
+.card.gone .disc,.card.gone .route,.card.gone .cfoot,.card.gone .hint{opacity:0;transition:opacity .2s}
 .disc p{margin:0;font-family:var(--f);font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.62;letter-spacing:-.005em;text-align:center;text-wrap:balance;word-break:auto-phrase}
 .disc .when{margin-top:14px;font-family:var(--f);font-size:10px;letter-spacing:.22em;color:var(--l26);font-variant-numeric:tabular-nums}
 .route{display:flex;gap:12px;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .28s,transform .28s var(--ease)}
@@ -181,7 +236,8 @@ body.kb .pull{animation:none;opacity:0}
 .hint{font-size:10.5px;letter-spacing:.34em;text-indent:.34em;color:var(--l26)}
 
 /* ── 記録 ── */
-#dash{overflow-y:auto;padding:calc(34px + env(safe-area-inset-top)) 22px calc(56px + env(safe-area-inset-bottom))}
+#dash{overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(34px + env(safe-area-inset-top)) 22px calc(56px + env(safe-area-inset-bottom) + var(--kb,0px))}
 .h{font-size:11px;font-weight:500;letter-spacing:.34em;margin:0 0 30px;color:var(--l40)}
 .today{display:flex;align-items:baseline;gap:11px;margin-bottom:32px}
 .today b{font-family:var(--f);font-weight:300;font-size:66px;line-height:.88;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
@@ -201,6 +257,25 @@ body.kb .pull{animation:none;opacity:0}
 .recent .r em{font-style:normal;font-size:9.5px;letter-spacing:.2em;color:var(--l26);flex:0 0 auto}
 .empty{font-size:11px;color:var(--l26);letter-spacing:.34em}
 .dfoot{margin-top:40px;display:flex;gap:24px;font-size:10.5px;letter-spacing:.22em;color:var(--l26)}
+
+/* 後日の改修のヒントを溜める枠 */
+.memo{margin-top:46px;border-top:1px solid var(--l09);padding-top:24px}
+.memo h2{font-size:11px;font-weight:500;letter-spacing:.34em;color:var(--l40);margin:0 0 18px}
+.mIn{display:block;width:100%;min-height:76px;background:var(--l05);border:1px solid var(--l09);
+  border-radius:12px;padding:13px 15px;color:var(--lume);font:inherit;font-size:14px;line-height:1.75;
+  resize:none;-webkit-appearance:none;word-break:auto-phrase}
+.mIn::placeholder{color:var(--l26);letter-spacing:.3em}
+.mIn:focus{outline:none;border-color:var(--l26)}
+.mAdd{margin-top:12px;min-height:42px;padding:0 26px;border-radius:21px;border:1px solid var(--l26);
+  background:var(--l05);font-size:12px;font-weight:500;letter-spacing:.3em;text-indent:.3em}
+.mAdd:active{background:var(--l09);border-color:var(--l40)}
+.mList{margin-top:22px}
+.mItem{display:flex;gap:14px;align-items:baseline;width:100%;text-align:left;
+  padding:13px 0;border-bottom:1px solid var(--l05)}
+.mItem p{margin:0;flex:1;font-size:13.5px;line-height:1.8;color:var(--l58);word-break:auto-phrase}
+.mItem em{font-style:normal;flex:0 0 auto;font-size:9.5px;letter-spacing:.14em;color:var(--l26);
+  font-variant-numeric:tabular-nums}
+.mItem:active p{color:var(--l86)}
 .dfoot button:active{color:var(--l86)}
 
 /* ── 通知 ── */
@@ -217,7 +292,15 @@ body.kb .pull{animation:none;opacity:0}
 </style>
 
 <main class="track" id="track">
-  <section class="pane" id="dash" aria-label="記録"></section>
+  <section class="pane" id="dash" aria-label="記録">
+    <div id="dashBody"></div>
+    <div class="memo">
+      <h2>notes</h2>
+      <textarea class="mIn" id="mIn" rows="3" placeholder="note" aria-label="あとで直すためのメモ"></textarea>
+      <button class="mAdd" id="mAdd">add</button>
+      <div class="mList" id="mList"></div>
+    </div>
+  </section>
 
   <section class="pane" id="throw" aria-label="投げる" data-state="idle">
     <div class="stage">
@@ -253,10 +336,17 @@ body.kb .pull{animation:none;opacity:0}
         <span>soon</span>
       </div>
     </div>
-    <div class="sed" id="sed"></div>
+    <div class="rise"></div>
+    <div class="heaven" id="heaven" aria-hidden="true">
+      <div class="hsky" id="hsky"></div>
+      <div class="hhead"><b id="hCount">0</b><span>risen</span></div>
+      <div class="hempty" id="hEmpty">not yet</div>
+      <div class="htip">down</div>
+    </div>
     <div class="card" id="card">
       <div class="disc" id="disc">
-        <div>
+        <div class="mark"></div>
+        <div class="discIn">
           <p id="cText"></p>
           <div class="when" id="cWhen"></div>
         </div>
@@ -265,8 +355,6 @@ body.kb .pull{animation:none;opacity:0}
       <div class="route" id="route">
       </div>
       <div class="cfoot">
-        <button id="cPull">want</button>
-        <button id="cLess">less</button>
         <button id="cDel">forget</button>
       </div>
     </div>
@@ -295,7 +383,7 @@ function nowIso(){
 function uid(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
 
 /* ───────── 保存 ───────── */
-function blank(){return {version:1,captures:[],habits:[],reservations:[]}}
+function blank(){return {version:1,captures:[],habits:[],reservations:[],notes:[]}}
 
 /* localStorage が使えない文脈（プライベートモード、埋め込み枠内）でも落ちない。
    その場合だけメモリに置き、一度だけ「残らない」ことを伝える。 */
@@ -314,6 +402,7 @@ var state=(function load(){
     s.version=1;
     s.habits=Array.isArray(s.habits)?s.habits:[];
     s.reservations=Array.isArray(s.reservations)?s.reservations:[];
+    s.notes=Array.isArray(s.notes)?s.notes:[];
     s.captures.forEach(function(c){
       c.pull=(typeof c.pull==='number'&&c.pull>0)?c.pull:1;
       c.kind=c.kind||'unknown';
@@ -349,8 +438,11 @@ function goPane(i,smooth){track.scrollTo({left:track.clientWidth*i,behavior:smoo
 function syncPane(){
   var w=track.clientWidth||1,i=Math.round(track.scrollLeft/w);
   i=Math.max(0,Math.min(2,i));
-  if(i!==pane){pane=i;for(var k=0;k<3;k++)dots[k].classList.toggle('on',k===pane)}
-  if(pane===0)drawDash();
+  if(i!==pane){
+    pane=i;
+    for(var k=0;k<3;k++)dots[k].classList.toggle('on',k===pane);
+    if(pane===0)drawDash();      // 書きかけのメモを消さないよう、面が変わったときだけ
+  }
   if(pane===2)layout();
 }
 track.addEventListener('scroll',syncPane,{passive:true});
@@ -535,7 +627,7 @@ function flyToBox(text){
 }
 
 /* ───────── 箱 ───────── */
-var jar=$('jar'),sed=$('sed'),ghost=$('ghost');
+var jar=$('jar'),ghost=$('ghost');
 var bubbles=[],W=0,H=0,raf=null,idleFrames=0;
 
 /* 核になる語だけを抜く。形態素解析は積まない。
@@ -624,7 +716,7 @@ function build(){
     return b;
   });
   ghost.hidden=live.length>0;
-  drawSed();
+  if(skyOn)drawHeaven();
   idleFrames=0;
   layout();
 }
@@ -680,22 +772,85 @@ function layout(){
 }
 if(window.ResizeObserver)new ResizeObserver(function(){layout()}).observe(jar);
 
-function drawSed(){
+/* ───────── 天国 ─────────
+   行動へ送り終えたものが、白い空をゆっくり昇り続ける層。箱の面を下から上へなぞると開く。
+   減っていく箱と、増えていく空を対にする。 */
+var heaven=$('heaven'),hsky=$('hsky'),skyOn=false,souls=[],SW2=0,SH2=0,sraf=null;
+
+function drawHeaven(){
   var done=state.captures.filter(function(c){return c.status==='growing'||c.status==='reserved'})
-    .sort(function(a,b){return (b.updatedAt||'').localeCompare(a.updatedAt||'')});
-  sed.innerHTML='';
-  done.forEach(function(c){
-    var b=document.createElement('button');
-    b.className='s '+(c.status==='growing'?'habit':'plan');
+    .sort(function(a,b){return (a.updatedAt||'').localeCompare(b.updatedAt||'')});
+  $('hCount').textContent=done.length;
+  $('hEmpty').hidden=done.length>0;
+  hsky.innerHTML='';
+  SW2=hsky.clientWidth;SH2=hsky.clientHeight;
+  if(!SW2||!SH2)return;
+  souls=done.map(function(c,i){
     var k=keyword(c.text);
-    b.innerHTML='<em>'+(c.status==='growing'?'habit':'plan')+'</em>'+esc(k.length>10?k.slice(0,10)+'…':k);
-    b.addEventListener('click',function(){openCard(c.id)});
-    sed.appendChild(b);
+    var r=Math.max(26,Math.min(64,24+Math.sqrt(Math.max(1,c.pull||1))*8+Math.min(k.length,10)*0.9));
+    var el=document.createElement('button');
+    el.className='hb';el.style.width=el.style.height=(r*2)+'px';
+    el.style.setProperty('--a',(0.035+Math.min(0.075,((c.pull||1)-1)*0.012)).toFixed(3));
+    el.innerHTML=label(k,r);
+    el.setAttribute('aria-label',c.text);
+    el.addEventListener('click',function(){openCard(c.id)});
+    hsky.appendChild(el);
+    return {el:el,r:r,
+      x:r+10+Math.random()*Math.max(1,SW2-2*r-20),
+      y:SH2+r-((i+0.5)/done.length)*(SH2+2*r),
+      v:reduced?0:0.14+Math.random()*0.2,
+      ph:Math.random()*6.283};
   });
+  placeSouls();
+  if(!reduced&&skyOn&&!sraf)sraf=requestAnimationFrame(skyStep);
+}
+function placeSouls(){
+  for(var i=0;i<souls.length;i++){
+    var s=souls[i],x=s.x+Math.sin(s.ph)*11;
+    s.el.style.transform='translate3d('+(x-s.r)+'px,'+(s.y-s.r)+'px,0)';
+  }
+}
+function skyStep(){
+  for(var i=0;i<souls.length;i++){
+    var s=souls[i];s.y-=s.v;s.ph+=0.011;
+    if(s.y<-s.r-12)s.y=SH2+s.r+12;      // 天井を抜けたら、また下から昇り直す
+  }
+  placeSouls();
+  sraf=skyOn?requestAnimationFrame(skyStep):null;
+}
+function openSky(){
+  if(skyOn)return;skyOn=true;
+  heaven.classList.add('on');heaven.setAttribute('aria-hidden','false');
+  document.body.classList.add('sky');track.classList.add('lock');
+  drawHeaven();
+}
+function closeSky(){
+  if(!skyOn)return;skyOn=false;
+  heaven.classList.remove('on');heaven.setAttribute('aria-hidden','true');
+  document.body.classList.remove('sky');track.classList.remove('lock');
 }
 
+/* 箱の面：下から上へなぞると空へ、上から下へなぞると箱へ */
+var boxPane=$('box'),by=0,bx=0,bsw=false;
+boxPane.addEventListener('touchstart',function(e){
+  if(e.touches.length!==1||card.classList.contains('on')){bsw=false;return}
+  by=e.touches[0].clientY;bx=e.touches[0].clientX;bsw=true;
+},{passive:true});
+boxPane.addEventListener('touchend',function(e){
+  if(!bsw)return;bsw=false;
+  var t=e.changedTouches[0],dy=t.clientY-by,dx=t.clientX-bx;
+  if(Math.abs(dy)<58||Math.abs(dy)<Math.abs(dx)*1.4)return;
+  if(dy<0)openSky();else closeSky();
+},{passive:true});
+document.addEventListener('keydown',function(e){
+  if(pane!==2||card.classList.contains('on'))return;
+  if(e.key==='ArrowUp')openSky();
+  else if(e.key==='ArrowDown'||e.key==='Escape')closeSky();
+});
+if(window.ResizeObserver)new ResizeObserver(function(){if(skyOn)drawHeaven()}).observe(hsky);
+
 /* ───────── 種のカード ───────── */
-var card=$('card'),disc=$('disc'),route=$('route'),cHint=$('cHint'),cur=null,openBonus=false;
+var card=$('card'),disc=$('disc'),route=$('route'),cHint=$('cHint'),cur=null;
 function find(id){return state.captures.filter(function(c){return c.id===id})[0]}
 function openCard(id){
   var c=find(id);if(!c)return;
@@ -703,7 +858,6 @@ function openCard(id){
   var n=c.text.length;
   $('cText').textContent=c.text;
   $('cText').style.fontSize=(n>96?14.5:n>56?16.5:n>30?19:21)+'px';
-  $('cWhen').textContent=(dayOf(c.createdAt)||'').replace(/-/g,'.')+(c.pull>1?'  ·  want '+c.pull:'');
   var sent=(c.status==='growing'||c.status==='reserved');
   route.innerHTML='';
   if(sent){
@@ -718,21 +872,101 @@ function openCard(id){
     var p=document.createElement('button');p.className='toP';p.textContent='plan';
     p.addEventListener('click',function(){send(c,'plan')});
     route.appendChild(h);route.appendChild(p);
-    cHint.textContent='press';
+    cHint.textContent='turn';
     route.classList.remove('on');
   }
+  card.classList.remove('gone');
   card.classList.add('on');track.classList.add('lock');
-  openBonus=false;
-  if(!sent){c.pull=(c.pull||1)+1;openBonus=true;c.updatedAt=nowIso();save()}
+  rot=0;disc.style.setProperty('--rot','0deg');
+  applyDial();
 }
-function closeCard(){card.classList.remove('on');track.classList.remove('lock');cur=null;build();drawDash()}
-disc.addEventListener('click',function(e){
-  e.stopPropagation();
+function closeCard(){
+  card.classList.remove('on');card.classList.remove('gone');
+  track.classList.remove('lock');cur=null;
+  build();drawDash();if(skyOn)drawHeaven();
+}
+/* 昔のクリックホイールと同じ。右（時計回り）へ回すと大きく、左へ回すと小さく。
+   ほとんど回さずに離したときだけ、押したものとして扱う。 */
+var dialing=false,lastAng=0,accum=0,turned=0,rot=0,pull0=1;
+var STEP=16;                       // 16°で1目盛り
+function discAng(e){
+  var r=disc.getBoundingClientRect();
+  return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI;
+}
+function applyDial(){
+  if(!cur)return;
+  var p=Math.max(1,Math.min(20,cur.pull||1));
+  disc.style.setProperty('--s',(0.62+Math.min(p,16)/16*0.44).toFixed(3));
+  $('cWhen').textContent=(dayOf(cur.createdAt)||'').replace(/-/g,'.')+'  ·  want '+p;
+}
+function tapDisc(){
   if(!cur)return;
   if(!route.classList.contains('on')){route.classList.add('on');cHint.textContent='where'}
-  else if(cur.status==='inbox'||cur.status==='resting'){route.classList.remove('on');cHint.textContent='press'}
+  else if(cur.status==='inbox'||cur.status==='resting'){route.classList.remove('on');cHint.textContent='turn'}
+}
+disc.addEventListener('pointerdown',function(e){
+  if(!cur)return;
+  dialing=true;accum=0;turned=0;lastAng=discAng(e);pull0=cur.pull||1;
+  disc.classList.add('turning');
+  try{disc.setPointerCapture(e.pointerId)}catch(_){}
+});
+disc.addEventListener('pointermove',function(e){
+  if(!dialing||!cur)return;
+  var a=discAng(e),d=a-lastAng;
+  if(d>180)d-=360;else if(d<-180)d+=360;
+  lastAng=a;accum+=d;turned+=Math.abs(d);rot+=d;
+  disc.style.setProperty('--rot',rot.toFixed(1)+'deg');
+  var steps=(accum/STEP)|0;
+  if(steps!==0){
+    accum-=steps*STEP;
+    var np=Math.max(1,Math.min(20,(cur.pull||1)+steps));
+    if(np!==cur.pull){
+      cur.pull=np;applyDial();
+      if(navigator.vibrate)try{navigator.vibrate(4)}catch(_){}
+    }
+  }
+});
+['pointerup','pointercancel'].forEach(function(ev){
+  disc.addEventListener(ev,function(){
+    if(!dialing)return;
+    dialing=false;disc.classList.remove('turning');
+    if(cur&&cur.pull!==pull0){cur.updatedAt=nowIso();save()}
+    if(turned<7)tapDisc();
+  });
 });
 card.addEventListener('click',function(e){if(e.target===card)closeCard()});
+
+/* 送った瞬間の見せ場。円が弾けて、語がひとつ上へ抜けていく */
+function burst(){
+  if(reduced)return;
+  var dr=disc.getBoundingClientRect(),cr=card.getBoundingClientRect();
+  var b=document.createElement('div');b.className='burst';
+  b.style.left=(dr.left-cr.left+dr.width/2)+'px';
+  b.style.top=(dr.top-cr.top+dr.height/2)+'px';
+  for(var i=0;i<22;i++){
+    var ang=(i/22)*6.283+Math.random()*0.28,d=90+Math.random()*150,sz=3+Math.random()*5;
+    var x=document.createElement('i');
+    x.style.width=x.style.height=sz.toFixed(1)+'px';
+    x.style.margin=(-sz/2).toFixed(1)+'px 0 0 '+(-sz/2).toFixed(1)+'px';
+    x.style.setProperty('--dx',(Math.cos(ang)*d).toFixed(0)+'px');
+    x.style.setProperty('--dy',(Math.sin(ang)*d-46).toFixed(0)+'px');
+    x.style.animationDelay=(Math.random()*0.07).toFixed(3)+'s';
+    b.appendChild(x);
+  }
+  card.appendChild(b);
+  setTimeout(function(){b.remove()},1100);
+}
+function ascend(text){
+  if(reduced)return;
+  var dr=disc.getBoundingClientRect(),cr=card.getBoundingClientRect();
+  var el=document.createElement('div');el.className='soul';
+  el.style.left=(dr.left-cr.left+dr.width/2)+'px';
+  el.style.top=(dr.top-cr.top+dr.height/2)+'px';
+  var k=keyword(text);
+  el.textContent=k.length>10?k.slice(0,10)+'…':k;
+  card.appendChild(el);
+  setTimeout(function(){el.remove()},1400);
+}
 
 function send(c,to){
   var t=nowIso();
@@ -746,26 +980,16 @@ function send(c,to){
       nextAction:'',status:'candidate',createdAt:t});
   }
   c.updatedAt=t;save();
-  if(navigator.vibrate)try{navigator.vibrate(14)}catch(e){}
-  closeCard();
-  say(to==='habit'?'habit':'plan');
+  if(navigator.vibrate)try{navigator.vibrate([14,40,20])}catch(e){}
+  burst();ascend(c.text);
+  card.classList.add('gone');
+  setTimeout(function(){closeCard();say(to==='habit'?'habit':'plan')},reduced?160:900);
 }
 function back2box(c){
   state.habits=state.habits.filter(function(h){return h.captureId!==c.id});
   state.reservations=state.reservations.filter(function(r){return r.captureId!==c.id});
   c.status='inbox';c.updatedAt=nowIso();save();closeCard();say('back');
 }
-function adjust(d){
-  if(!cur)return;
-  if(openBonus){cur.pull=Math.max(1,(cur.pull||1)-1);openBonus=false}  // 見ただけの分を戻す
-  cur.pull=Math.max(1,(cur.pull||1)+d);
-  cur.updatedAt=nowIso();save();
-  $('cWhen').textContent=(dayOf(cur.createdAt)||'').replace(/-/g,'.')
-    +(cur.pull>1?'  ·  want '+cur.pull:'');
-  say(d>0?'want':'less');
-}
-$('cPull').addEventListener('click',function(e){e.stopPropagation();adjust(2)});
-$('cLess').addEventListener('click',function(e){e.stopPropagation();adjust(-2)});
 $('cDel').addEventListener('click',function(e){
   e.stopPropagation();if(!cur)return;
   var c=cur;
@@ -796,7 +1020,7 @@ function drawDash(){
     return '<div class="'+(n===0?'zero':isNow?'now':'')+'" style="height:'+h+'px" title="'+days[i]+' '+n+'"></div>';
   }).join('');
 
-  $('dash').innerHTML=
+  $('dashBody').innerHTML=
     '<h1 class="h">days</h1>'+
     '<div class="today"><b>'+counts[13]+'</b><span>today</span></div>'+
     '<div class="chart">'+bars+'</div>'+
@@ -812,6 +1036,7 @@ function drawDash(){
     '</div>'+
     '<div class="dfoot"><button id="exp">export</button><span>'+state.captures.length+' kept</span></div>';
 
+  drawNotes();
   var exp=$('exp');
   if(exp)exp.addEventListener('click',function(){
     var json=JSON.stringify(state,null,2);
@@ -820,6 +1045,31 @@ function drawDash(){
     }else say('コピーに対応していない');
   });
 }
+
+/* ───────── メモ ─────────
+   あとで直すためのヒントを溜める枠。記録の面のいちばん下。 */
+function drawNotes(){
+  var list=$('mList');list.innerHTML='';
+  (state.notes||[]).slice().reverse().forEach(function(n){
+    var b=document.createElement('button');b.className='mItem';
+    b.innerHTML='<p></p><em>'+(dayOf(n.createdAt)||'').slice(5).replace('-','.')+'</em>';
+    b.querySelector('p').textContent=n.text;
+    b.addEventListener('click',function(){
+      say('forget?','yes',function(){
+        state.notes=state.notes.filter(function(x){return x.id!==n.id});
+        save();drawNotes();
+      });
+    });
+    list.appendChild(b);
+  });
+}
+$('mAdd').addEventListener('click',function(){
+  var el=$('mIn'),t=(el.value||'').trim();
+  if(!t){say('ひとことだけでも');return}
+  state.notes.push({id:'n'+uid(),text:t,createdAt:nowIso()});
+  save();el.value='';try{el.blur()}catch(e){}
+  drawNotes();say('kept');
+});
 
 /* ───────── 起動 ───────── */
 goPane(1,false);

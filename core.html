@@ -185,28 +185,35 @@ body.sky .dots{opacity:0}
 }
 
 /* 種のカード */
-.card{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
-  padding:0 22px calc(46px + env(safe-area-inset-bottom));background:rgba(8,8,10,.78);
+.card{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  padding:calc(30px + env(safe-area-inset-top)) 22px calc(40px + env(safe-area-inset-bottom));background:rgba(8,8,10,.78);
   -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .26s}
 .card.on{opacity:1;pointer-events:auto}
-.disc{position:relative;width:min(76vw,320px);aspect-ratio:1;border-radius:50%;border:1px solid var(--l16);
-  background:var(--l05);display:grid;place-items:center;padding:13%;
+.ctext{max-width:20em;text-align:center}
+.ctext p{margin:0;font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.62;
+  letter-spacing:-.005em;text-wrap:balance;word-break:auto-phrase}
+.ctext .when{margin-top:12px;font-size:10px;letter-spacing:.22em;color:var(--l26);
+  font-variant-numeric:tabular-nums}
+
+/* 円は大きさそのもの。回すのはカードのどこからでもよい（円は狙わなくていい） */
+.disc{position:relative;width:min(44vw,182px);aspect-ratio:1;border-radius:50%;
+  border:1px solid var(--l16);background:var(--l05);display:grid;place-items:center;
   transform:scale(.8);opacity:0;touch-action:none;
-  transition:transform .36s var(--ease),opacity .3s}
+  transition:transform .34s var(--ease),opacity .3s,border-color .2s}
 .card.on .disc{transform:scale(var(--s,1));opacity:1}
-/* 回している最中だけ、追随を速くする */
-.disc.turning,.disc.turning .discIn,.disc.turning .mark{transition:transform .09s linear}
-/* 円が大きくなっても文字の大きさは変えない（逆にかけ戻す） */
-.discIn{transform:scale(calc(1 / var(--s,1)));transition:transform .36s var(--ease)}
+.disc.turning{border-color:var(--l40)}
+.disc.turning,.disc.turning .dialNum,.disc.turning .mark{transition:transform .06s linear,border-color .2s}
+.dialNum{font-weight:300;font-size:30px;line-height:1;letter-spacing:-.04em;color:var(--l58);
+  font-variant-numeric:tabular-nums;
+  transform:scale(calc(1 / var(--s,1)));transition:transform .34s var(--ease)}
 /* 縁の目印。どれだけ回したかが見える */
 .mark{position:absolute;inset:0;border-radius:50%;pointer-events:none;
-  transform:rotate(var(--rot,0deg));transition:transform .09s linear}
+  transform:rotate(var(--rot,0deg));transition:transform .06s linear}
 .mark::before{content:"";position:absolute;top:-4px;left:50%;width:7px;height:7px;margin-left:-3.5px;
   border-radius:50%;background:var(--l58)}
 /* 弾けている最中は、中身を引っ込めて見せ場を空ける */
-.card.gone .disc,.card.gone .route,.card.gone .cfoot,.card.gone .hint{opacity:0;transition:opacity .2s}
-.disc p{margin:0;font-family:var(--f);font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.62;letter-spacing:-.005em;text-align:center;text-wrap:balance;word-break:auto-phrase}
-.disc .when{margin-top:14px;font-family:var(--f);font-size:10px;letter-spacing:.22em;color:var(--l26);font-variant-numeric:tabular-nums}
+.card.gone .disc,.card.gone .route,.card.gone .cfoot,.card.gone .hint,
+.card.gone .ctext{opacity:0;transition:opacity .2s}
 .route{display:flex;gap:12px;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .28s,transform .28s var(--ease)}
 .route.on{opacity:1;transform:none;pointer-events:auto}
 .route button{min-height:48px;padding:0 26px;font-size:13px;letter-spacing:.24em;text-indent:.24em;border-radius:24px}
@@ -325,12 +332,13 @@ body.sky .dots{opacity:0}
       <div class="htip">down</div>
     </div>
     <div class="card" id="card">
+      <div class="ctext">
+        <p id="cText"></p>
+        <div class="when" id="cWhen"></div>
+      </div>
       <div class="disc" id="disc">
         <div class="mark"></div>
-        <div class="discIn">
-          <p id="cText"></p>
-          <div class="when" id="cWhen"></div>
-        </div>
+        <div class="dialNum" id="cNum">1</div>
       </div>
       <div class="hint" id="cHint"></div>
       <div class="route" id="route">
@@ -670,10 +678,11 @@ function keyword(t){
   return w.length>8?w.slice(0,8):w;
 }
 
+var MAXP=40;                                  // 惹かれの上限
 function radius(c){
-  var base=30+9*Math.sqrt(Math.max(1,c.pull)-1)*1.7;
-  var len=Math.min(keyword(c.text).length,26)*0.55;
-  return Math.max(30,Math.min(76,base+len));
+  var r=22+10.5*Math.sqrt(Math.max(0,(c.pull||1)-1))
+        +Math.min(keyword(c.text).length,8)*0.6;
+  return Math.max(22,Math.min(92,r));
 }
 function measure(){W=jar.clientWidth;H=jar.clientHeight}
 
@@ -710,7 +719,7 @@ function label(k,r){
   var cols=Math.ceil(Math.sqrt(t.length));
   var rows=Math.ceil(t.length/cols);
   var fs=Math.min(side/cols,side/(rows*1.16))*0.95;
-  fs=Math.max(9.5,Math.min(30,fs));
+  fs=Math.max(9.5,Math.min(40,fs));
   return '<b style="font-size:'+fs.toFixed(1)+'px;width:'+Math.round(side)+'px">'+esc(t)+'</b>';
 }
 
@@ -768,7 +777,7 @@ function drawHeaven(){
   if(!SW2||!SH2)return;
   souls=done.map(function(c,i){
     var k=keyword(c.text);
-    var r=Math.max(26,Math.min(64,24+Math.sqrt(Math.max(1,c.pull||1))*8+Math.min(k.length,10)*0.9));
+    var r=Math.max(22,Math.min(88,20+9.5*Math.sqrt(Math.max(0,(c.pull||1)-1))+Math.min(k.length,8)*0.6));
     var el=document.createElement('button');
     el.className='hb';el.style.width=el.style.height=(r*2)+'px';
     el.style.setProperty('--a',(0.035+Math.min(0.075,((c.pull||1)-1)*0.012)).toFixed(3));
@@ -856,6 +865,7 @@ function openCard(id){
     cHint.textContent='turn';
     route.classList.remove('on');
   }
+  $('cWhen').textContent=(dayOf(c.createdAt)||'').replace(/-/g,'.');
   card.classList.remove('gone');
   card.classList.add('on');track.classList.add('lock');
   rot=0;disc.style.setProperty('--rot','0deg');
@@ -868,39 +878,41 @@ function closeCard(){
 }
 /* 昔のクリックホイールと同じ。右（時計回り）へ回すと大きく、左へ回すと小さく。
    ほとんど回さずに離したときだけ、押したものとして扱う。 */
-var dialing=false,lastAng=0,accum=0,turned=0,rot=0,pull0=1;
-var STEP=16;                       // 16°で1目盛り
-function discAng(e){
-  var r=disc.getBoundingClientRect();
-  return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI;
-}
+var dialing=false,lastAng=0,accum=0,turned=0,rot=0,pull0=1,fromDisc=false,downT=null,dcx=0,dcy=0;
+var STEP=9;                        // 9°で1目盛り。ひと回しで36段動く
 function applyDial(){
   if(!cur)return;
-  var p=Math.max(1,Math.min(20,cur.pull||1));
-  disc.style.setProperty('--s',(0.62+Math.min(p,16)/16*0.44).toFixed(3));
-  $('cWhen').textContent=(dayOf(cur.createdAt)||'').replace(/-/g,'.')+'  ·  want '+p;
+  var p=Math.max(1,Math.min(MAXP,cur.pull||1));
+  disc.style.setProperty('--s',(0.34+(p-1)/(MAXP-1)*0.98).toFixed(3));
+  $('cNum').textContent=p;
 }
 function tapDisc(){
   if(!cur)return;
   if(!route.classList.contains('on')){route.classList.add('on');cHint.textContent='where'}
   else if(cur.status==='inbox'||cur.status==='resting'){route.classList.remove('on');cHint.textContent='turn'}
 }
-disc.addEventListener('pointerdown',function(e){
+/* 円のふちを狙わせない。カードのどこから始めても、円の中心まわりの角度で回る */
+function angFrom(e){return Math.atan2(e.clientY-dcy,e.clientX-dcx)*180/Math.PI}
+card.addEventListener('pointerdown',function(e){
   if(!cur)return;
-  dialing=true;accum=0;turned=0;lastAng=discAng(e);pull0=cur.pull||1;
+  if(e.target.closest&&e.target.closest('button'))return;   // habit / plan / forget は素通し
+  var r=disc.getBoundingClientRect();dcx=r.left+r.width/2;dcy=r.top+r.height/2;
+  dialing=true;accum=0;turned=0;pull0=cur.pull||1;
+  downT=e.target;fromDisc=(e.target===disc||disc.contains(e.target));
+  lastAng=angFrom(e);
   disc.classList.add('turning');
-  try{disc.setPointerCapture(e.pointerId)}catch(_){}
+  try{card.setPointerCapture(e.pointerId)}catch(_){}
 });
-disc.addEventListener('pointermove',function(e){
+card.addEventListener('pointermove',function(e){
   if(!dialing||!cur)return;
-  var a=discAng(e),d=a-lastAng;
+  var a=angFrom(e),d=a-lastAng;
   if(d>180)d-=360;else if(d<-180)d+=360;
   lastAng=a;accum+=d;turned+=Math.abs(d);rot+=d;
   disc.style.setProperty('--rot',rot.toFixed(1)+'deg');
   var steps=(accum/STEP)|0;
   if(steps!==0){
     accum-=steps*STEP;
-    var np=Math.max(1,Math.min(20,(cur.pull||1)+steps));
+    var np=Math.max(1,Math.min(MAXP,(cur.pull||1)+steps));
     if(np!==cur.pull){
       cur.pull=np;applyDial();
       if(navigator.vibrate)try{navigator.vibrate(4)}catch(_){}
@@ -908,14 +920,16 @@ disc.addEventListener('pointermove',function(e){
   }
 });
 ['pointerup','pointercancel'].forEach(function(ev){
-  disc.addEventListener(ev,function(){
+  card.addEventListener(ev,function(){
     if(!dialing)return;
     dialing=false;disc.classList.remove('turning');
     if(cur&&cur.pull!==pull0){cur.updatedAt=nowIso();save()}
-    if(turned<7)tapDisc();
+    if(turned<7){
+      if(fromDisc)tapDisc();
+      else if(downT===card)closeCard();     // 背景を触っただけなら閉じる
+    }
   });
 });
-card.addEventListener('click',function(e){if(e.target===card)closeCard()});
 
 /* 送った瞬間の見せ場。円が弾けて、語がひとつ上へ抜けていく */
 function burst(){

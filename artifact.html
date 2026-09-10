@@ -186,7 +186,7 @@ body.sky .dots{opacity:0}
 
 /* 種のカード */
 .card{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
-  padding:calc(30px + env(safe-area-inset-top)) 22px calc(40px + env(safe-area-inset-bottom));background:rgba(8,8,10,.78);
+  padding:calc(30px + env(safe-area-inset-top)) 22px calc(40px + env(safe-area-inset-bottom) + var(--kb,0px));background:rgba(8,8,10,.78);
   -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .26s}
 .card.on{opacity:1;pointer-events:auto}
 .ctext{max-width:20em;text-align:center}
@@ -200,6 +200,18 @@ body.sky .dots{opacity:0}
 .w.on{color:var(--void);background:var(--lume);border-bottom-color:transparent}
 .w:active{background:var(--l16);color:var(--lume)}
 .w.on:active{background:var(--l58);color:var(--void)}
+
+/* 言ったことそのものを直す。直している間は、円も送り先も引っ込める */
+.cedit{display:none;width:100%;background:var(--l05);border:1px solid var(--l16);border-radius:12px;
+  padding:13px 15px;color:var(--lume);font:inherit;font-weight:300;
+  font-size:clamp(17px,4.9vw,21px);line-height:1.72;letter-spacing:-.005em;
+  resize:none;-webkit-appearance:none;word-break:auto-phrase;min-height:5.6em}
+.cedit:focus{outline:none;border-color:var(--l40)}
+.eacts{display:none;align-items:center;gap:26px}
+.card.editing .cedit{display:block}
+.card.editing .eacts{display:flex}
+.card.editing .ctext p,.card.editing .ctext .when,
+.card.editing .disc,.card.editing .hint,.card.editing .route,.card.editing .cfoot{display:none}
 .ctext .when{margin-top:12px;font-size:10px;letter-spacing:.22em;color:var(--l26);
   font-variant-numeric:tabular-nums}
 
@@ -342,6 +354,7 @@ body.sky .dots{opacity:0}
     <div class="card" id="card">
       <div class="ctext">
         <p id="cText"></p>
+        <textarea class="cedit" id="cEdit" rows="3" aria-label="言ったことを直す"></textarea>
         <div class="when" id="cWhen"></div>
       </div>
       <div class="disc" id="disc">
@@ -352,7 +365,12 @@ body.sky .dots{opacity:0}
       <div class="route" id="route">
       </div>
       <div class="cfoot">
+        <button id="cEditBtn">edit</button>
         <button id="cDel">forget</button>
+      </div>
+      <div class="eacts">
+        <button class="place" id="eKeep">keep</button>
+        <button class="drop" id="eBack">back</button>
       </div>
     </div>
   </section>
@@ -916,7 +934,7 @@ function drawPick(c){
 }
 
 function closeCard(){
-  card.classList.remove('on');card.classList.remove('gone');
+  card.classList.remove('on');card.classList.remove('gone');card.classList.remove('editing');
   track.classList.remove('lock');cur=null;
   build();drawDash();if(skyOn)drawHeaven();
 }
@@ -938,7 +956,7 @@ function tapDisc(){
 /* 円のふちを狙わせない。カードのどこから始めても、円の中心まわりの角度で回る */
 function angFrom(e){return Math.atan2(e.clientY-dcy,e.clientX-dcx)*180/Math.PI}
 card.addEventListener('pointerdown',function(e){
-  if(!cur)return;
+  if(!cur||card.classList.contains('editing'))return;
   if(e.target.closest&&e.target.closest('button'))return;   // habit / plan / forget は素通し
   var r=disc.getBoundingClientRect();dcx=r.left+r.width/2;dcy=r.top+r.height/2;
   dialing=true;accum=0;turned=0;pull0=cur.pull||1;
@@ -1029,6 +1047,34 @@ function back2box(c){
   state.reservations=state.reservations.filter(function(r){return r.captureId!==c.id});
   c.status='inbox';c.updatedAt=nowIso();save();closeCard();say('back');
 }
+/* 言ったことを直す。iOS は押したのと同じ処理の中で focus しないとキーボードが出ない */
+$('cEditBtn').addEventListener('click',function(e){
+  e.stopPropagation();if(!cur)return;
+  $('cEdit').value=cur.text;
+  card.classList.add('editing');
+  try{$('cEdit').focus()}catch(_){}
+});
+$('eBack').addEventListener('click',function(e){
+  e.stopPropagation();
+  card.classList.remove('editing');
+  try{$('cEdit').blur()}catch(_){}
+});
+$('eKeep').addEventListener('click',function(e){
+  e.stopPropagation();if(!cur)return;
+  var t=($('cEdit').value||'').replace(/\s+/g,' ').trim();
+  if(!t){say('ひとことだけでも');return}
+  cur.text=t;
+  // 載せていた語が文から消えていたら、自動に戻す
+  if(cur.label&&runsOf(t).every(function(g){return g.t!==cur.label}))cur.label='';
+  cur.updatedAt=nowIso();save();
+  card.classList.remove('editing');
+  try{$('cEdit').blur()}catch(_){}
+  var n=t.length;
+  $('cText').style.fontSize=(n>96?14.5:n>56?16.5:n>30?19:21)+'px';
+  drawPick(cur);
+  say('kept');
+});
+
 $('cDel').addEventListener('click',function(e){
   e.stopPropagation();if(!cur)return;
   var c=cur;

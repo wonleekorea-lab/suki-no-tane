@@ -190,8 +190,16 @@ body.sky .dots{opacity:0}
   -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .26s}
 .card.on{opacity:1;pointer-events:auto}
 .ctext{max-width:20em;text-align:center}
-.ctext p{margin:0;font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.62;
+.ctext p{margin:0;font-weight:300;font-size:clamp(17px,4.9vw,21px);line-height:1.9;
   letter-spacing:-.005em;text-wrap:balance;word-break:auto-phrase}
+/* 文の中の語。押すと泡に載る。下線が「押せる」の合図 */
+.w{display:inline;font:inherit;letter-spacing:inherit;color:var(--l58);
+  padding:2px 3px;margin:0 -1px;border-radius:5px;
+  border-bottom:1px solid var(--l16);
+  transition:color .2s,background .2s,border-color .2s}
+.w.on{color:var(--void);background:var(--lume);border-bottom-color:transparent}
+.w:active{background:var(--l16);color:var(--lume)}
+.w.on:active{background:var(--l58);color:var(--void)}
 .ctext .when{margin-top:12px;font-size:10px;letter-spacing:.22em;color:var(--l26);
   font-variant-numeric:tabular-nums}
 
@@ -394,6 +402,7 @@ var state=(function load(){
     s.notes=Array.isArray(s.notes)?s.notes:[];
     s.captures.forEach(function(c){
       c.pull=(typeof c.pull==='number'&&c.pull>0)?c.pull:1;
+      c.label=(typeof c.label==='string')?c.label:'';
       c.kind=c.kind||'unknown';
       c.status=c.status||'inbox';
       c.text=String(c.text||'');
@@ -631,14 +640,13 @@ var STOP=['上手','下手','得意','苦手','普通','普段','大事','大切
 // 「毎日走りたい」のように漢字が続くと切れ目がない。時を言う語だけ、前から切り離す
 var WHEN=['毎日','毎朝','毎晩','毎週','毎月','毎年','今日','明日','明後日','来週','来月','今度','最近','今年'];
 
-function keyword(t){
-  var s=String(t).trim()
-    .replace(/^(えっと|えーと|えー|あの|あのー|んー|なんか|そうだな|うーん|やっぱり|ちょっと|もっと)[、,。\s]*/,'')
-    .replace(/[。、,.!?！？\s]+$/,'');
+/* 語の切り出しは、自動で選ぶときと、手で選ばせるときの両方で使う。
+   区切り自体は同じなので、切る処理だけを取り出しておく。 */
+function runsOf(s){
   var re=/[\u3005\u3006\u4E00-\u9FFF\u30A1-\u30FF\uFF66-\uFF9FA-Za-z0-9\uFF10-\uFF19]+/g;
   var runs=[],m;
   while((m=re.exec(s))!==null)runs.push({t:m[0],i:m.index,e:m.index+m[0].length,tail:null});
-  if(!runs.length)return s.slice(0,6)||String(t).trim();
+  if(!runs.length)return [];
 
   var split=[];
   runs.forEach(function(r){
@@ -662,6 +670,15 @@ function keyword(t){
       merged[merged.length-1]={t:p.t+sep+c.t,i:p.i,e:c.e,tail:c.t};
     else merged.push(c);
   }
+  return merged;
+}
+
+function keyword(t){
+  var s=String(t).trim()
+    .replace(/^(えっと|えーと|えー|あの|あのー|んー|なんか|そうだな|うーん|やっぱり|ちょっと|もっと)[、,。\s]*/,'')
+    .replace(/[。、,.!?！？\s]+$/,'');
+  var merged=runsOf(s);
+  if(!merged.length)return s.slice(0,6)||String(t).trim();
 
   var best=null,top=-1e9;
   for(var j=0;j<merged.length;j++){
@@ -672,16 +689,18 @@ function keyword(t){
     var score=word.length+(mk?100:0)-(STOP.indexOf(g.t)>=0?5:0);
     if(score>top){top=score;best={t:word,tail:g.tail}}
   }
-
   var w=best.t;
   if(w.length>7&&best.tail)w=best.tail;   // 「の」で伸びすぎたら頭の名詞だけ
   return w.length>8?w.slice(0,8):w;
 }
 
-var MAXP=40;                                  // 惹かれの上限
+/* 泡に出す語。自分で選んであればそれ、なければ自動で選んだもの */
+function shown(c){return (c.label||'')||keyword(c.text)}
+
+var MAXP=40;                    // 惹かれの上限。ホイールの片端
 function radius(c){
   var r=22+10.5*Math.sqrt(Math.max(0,(c.pull||1)-1))
-        +Math.min(keyword(c.text).length,8)*0.6;
+        +Math.min(shown(c).length,8)*0.6;
   return Math.max(22,Math.min(92,r));
 }
 function measure(){W=jar.clientWidth;H=jar.clientHeight}
@@ -696,7 +715,7 @@ function build(){
     var el=document.createElement('button');
     el.className='bub';el.style.width=el.style.height=(r*2)+'px';
     el.style.setProperty('--a',(0.032+Math.min(0.078,(Math.max(1,c.pull)-1)*0.013)).toFixed(3));
-    el.innerHTML=label(keyword(c.text),r);
+    el.innerHTML=label(shown(c),r);
     el.setAttribute('aria-label',c.text);
     el.addEventListener('click',function(){openCard(c.id)});
     jar.appendChild(el);
@@ -776,7 +795,7 @@ function drawHeaven(){
   SW2=hsky.clientWidth;SH2=hsky.clientHeight;
   if(!SW2||!SH2)return;
   souls=done.map(function(c,i){
-    var k=keyword(c.text);
+    var k=shown(c);
     var r=Math.max(22,Math.min(88,20+9.5*Math.sqrt(Math.max(0,(c.pull||1)-1))+Math.min(k.length,8)*0.6));
     var el=document.createElement('button');
     el.className='hb';el.style.width=el.style.height=(r*2)+'px';
@@ -846,8 +865,8 @@ function openCard(id){
   var c=find(id);if(!c)return;
   cur=c;
   var n=c.text.length;
-  $('cText').textContent=c.text;
   $('cText').style.fontSize=(n>96?14.5:n>56?16.5:n>30?19:21)+'px';
+  drawPick(c);
   var sent=(c.status==='growing'||c.status==='reserved');
   route.innerHTML='';
   if(sent){
@@ -871,6 +890,31 @@ function openCard(id){
   rot=0;disc.style.setProperty('--rot','0deg');
   applyDial();
 }
+/* 文を語ごとに割って、押せるようにする。押した語が泡に載る。
+   もう一度同じ語を押すと、自動で選んだものに戻る。 */
+function drawPick(c){
+  var el=$('cText');el.innerHTML='';
+  var segs=runsOf(c.text),pos=0,now=shown(c);
+  var frag=document.createDocumentFragment();
+  segs.forEach(function(g){
+    if(g.i>pos)frag.appendChild(document.createTextNode(c.text.slice(pos,g.i)));
+    var b=document.createElement('button');
+    b.className='w'+(g.t===now?' on':'');
+    b.textContent=g.t;
+    b.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      c.label=(c.label===g.t)?'':g.t;
+      c.updatedAt=nowIso();save();
+      drawPick(c);
+      if(navigator.vibrate)try{navigator.vibrate(6)}catch(_){}
+    });
+    frag.appendChild(b);
+    pos=g.e;
+  });
+  if(pos<c.text.length)frag.appendChild(document.createTextNode(c.text.slice(pos)));
+  el.appendChild(frag);
+}
+
 function closeCard(){
   card.classList.remove('on');card.classList.remove('gone');
   track.classList.remove('lock');cur=null;
@@ -951,13 +995,13 @@ function burst(){
   card.appendChild(b);
   setTimeout(function(){b.remove()},1100);
 }
-function ascend(text){
+function ascend(c){
   if(reduced)return;
   var dr=disc.getBoundingClientRect(),cr=card.getBoundingClientRect();
   var el=document.createElement('div');el.className='soul';
   el.style.left=(dr.left-cr.left+dr.width/2)+'px';
   el.style.top=(dr.top-cr.top+dr.height/2)+'px';
-  var k=keyword(text);
+  var k=shown(c);
   el.textContent=k.length>10?k.slice(0,10)+'…':k;
   card.appendChild(el);
   setTimeout(function(){el.remove()},1400);
@@ -976,7 +1020,7 @@ function send(c,to){
   }
   c.updatedAt=t;save();
   if(navigator.vibrate)try{navigator.vibrate([14,40,20])}catch(e){}
-  burst();ascend(c.text);
+  burst();ascend(c);
   card.classList.add('gone');
   setTimeout(function(){closeCard();say(to==='habit'?'habit':'plan')},reduced?160:900);
 }
